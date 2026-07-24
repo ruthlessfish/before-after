@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>&lt;before-after&gt; &mdash; comparison slider</title>
+<style>
+  :root {
+    color-scheme: light dark;
+
+    --ground: #eceff1;
+    --surface: #ffffff;
+    --surface-2: #f4f7f8;
+    --ink: #0e1518;
+    --ink-2: #37484f;
+    --muted: #6b7f88;
+    --rule: #d2dade;
+    --rule-2: #e2e8ea;
+    --accent: #00778f;
+    --accent-2: #00a8c8;
+    --mag: #ab1259;
+    --shadow: 0 1px 2px rgba(14, 21, 24, .06), 0 8px 24px -12px rgba(14, 21, 24, .18);
+
+    --tok-key: var(--accent);
+    --tok-str: #97295a;
+    --tok-com: #86999f;
+    --tok-num: #2f5f6d;
+
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, "DejaVu Sans Mono", Consolas, monospace;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+
+    --step: 0.5rem;
+    --measure: 68ch;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #0a1013;
+      --surface: #101a1e;
+      --surface-2: #16232a;
+      --ink: #e3ecef;
+      --ink-2: #b3c4cb;
+      --muted: #82979f;
+      --rule: #22333a;
+      --rule-2: #1a282e;
+      --accent: #3fd0e8;
+      --accent-2: #83e4f3;
+      --mag: #ff6fa8;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 10px 30px -14px rgba(0, 0, 0, .8);
+
+      --tok-str: #ff8fbc;
+      --tok-com: #6d848c;
+      --tok-num: #9fd7e4;
+    }
+  }
+
+  :root[data-theme="light"] {
+    --ground: #eceff1;
+    --surface: #ffffff;
+    --surface-2: #f4f7f8;
+    --ink: #0e1518;
+    --ink-2: #37484f;
+    --muted: #6b7f88;
+    --rule: #d2dade;
+    --rule-2: #e2e8ea;
+    --accent: #00778f;
+    --accent-2: #00a8c8;
+    --mag: #ab1259;
+    --shadow: 0 1px 2px rgba(14, 21, 24, .06), 0 8px 24px -12px rgba(14, 21, 24, .18);
+    --tok-str: #97295a;
+    --tok-com: #86999f;
+    --tok-num: #2f5f6d;
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #0a1013;
+    --surface: #101a1e;
+    --surface-2: #16232a;
+    --ink: #e3ecef;
+    --ink-2: #b3c4cb;
+    --muted: #82979f;
+    --rule: #22333a;
+    --rule-2: #1a282e;
+    --accent: #3fd0e8;
+    --accent-2: #83e4f3;
+    --mag: #ff6fa8;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 10px 30px -14px rgba(0, 0, 0, .8);
+    --tok-str: #ff8fbc;
+    --tok-com: #6d848c;
+    --tok-num: #9fd7e4;
+  }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.65;
+  }
+
+  ::selection { background: var(--accent); color: var(--surface); }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  .page {
+    max-width: 1140px;
+    margin-inline: auto;
+    padding: 0 clamp(1rem, 4vw, 3rem) 6rem;
+  }
+
+  /* ---- masthead ---------------------------------------------------- */
+
+  .masthead {
+    display: grid;
+    gap: 1.25rem;
+    padding: clamp(3rem, 8vw, 5.5rem) 0 clamp(2rem, 5vw, 3rem);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    align-items: baseline;
+  }
+
+  .eyebrow b { color: var(--accent); font-weight: 500; }
+
+  h1 {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: clamp(2rem, 6.5vw, 3.4rem);
+    letter-spacing: -.02em;
+    line-height: 1.05;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  h1 span { color: var(--muted); }
+
+  .lede {
+    margin: 0;
+    max-width: var(--measure);
+    font-size: clamp(1.05rem, 2.2vw, 1.25rem);
+    color: var(--ink-2);
+  }
+
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem 1.75rem;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: .25rem;
+  }
+
+  .facts span { display: inline-flex; gap: .5rem; }
+  .facts span i { font-style: normal; color: var(--ink); }
+
+  /* ---- section scaffold -------------------------------------------- */
+
+  .sec {
+    display: grid;
+    grid-template-columns: 9.5rem minmax(0, 1fr);
+    gap: 0 2.5rem;
+    padding: clamp(2.5rem, 6vw, 4rem) 0;
+    border-bottom: 1px solid var(--rule);
+    align-items: start;
+  }
+
+  .sec-label {
+    position: sticky;
+    top: 1.5rem;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: grid;
+    gap: .35rem;
+  }
+
+  .sec-label em {
+    font-style: normal;
+    letter-spacing: .02em;
+    text-transform: none;
+    color: var(--muted);
+    opacity: .65;
+  }
+
+  .sec-body { display: grid; gap: 1.5rem; min-width: 0; }
+  .sec-body > p { margin: 0; max-width: var(--measure); color: var(--ink-2); }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 1.35rem;
+    line-height: 1.25;
+    margin: 0;
+    letter-spacing: -.01em;
+  }
+
+  h3 {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 11.5px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink);
+    margin: 1rem 0 0;
+  }
+
+  h3:first-child { margin-top: 0; }
+
+  @media (max-width: 820px) {
+    .sec { grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }
+    .sec-label { position: static; }
+  }
+
+  /* ---- plate (demo frame with registration ticks) ------------------- */
+
+  .plate { position: relative; padding: 13px; }
+
+  .plate::before,
+  .plate::after {
+    content: "";
+    position: absolute;
+    width: 13px;
+    height: 13px;
+    border: 1px solid var(--muted);
+    opacity: .55;
+    pointer-events: none;
+  }
+
+  .plate::before { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+  .plate::after { right: 0; bottom: 0; border-left: 0; border-top: 0; }
+
+  .plate-cap {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: .5rem 1.5rem;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: .04em;
+    color: var(--muted);
+    padding: .75rem 13px 0;
+  }
+
+  .readout { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .readout b { color: var(--accent); font-weight: 500; }
+
+  .hero-demo { padding-top: clamp(2rem, 5vw, 3rem); }
+
+  before-after {
+    box-shadow: var(--shadow);
+    --ba-radius: 3px;
+  }
+
+  .demo-grid {
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 21rem), 1fr));
+    align-items: start;
+  }
+
+  /* ---- code -------------------------------------------------------- */
+
+  pre, code, kbd { font-family: var(--mono); }
+
+  .code {
+    margin: 0;
+    background: var(--surface-2);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 1rem 1.1rem;
+    font-size: 13px;
+    line-height: 1.75;
+    overflow-x: auto;
+    tab-size: 2;
+    color: var(--ink);
+  }
+
+  .code .t { color: var(--accent); }
+  .code .a { color: var(--ink-2); }
+  .code .v { color: var(--tok-str); }
+  .code .c { color: var(--tok-com); }
+  .code .k { color: var(--tok-key); }
+  .code .s { color: var(--tok-str); }
+  .code .tpl { color: var(--ink-2); }
+  .code .n { color: var(--tok-num); }
+
+  p code, td code, li code {
+    background: var(--surface-2);
+    border: 1px solid var(--rule-2);
+    border-radius: 3px;
+    padding: .08em .38em;
+    font-size: .82em;
+  }
+
+  kbd {
+    display: inline-block;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    padding: .05em .45em;
+    font-size: 11.5px;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+
+  /* ---- tables ------------------------------------------------------ */
+
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    background: var(--surface);
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 14px;
+    font-family: var(--serif);
+  }
+
+  th, td {
+    text-align: left;
+    padding: .7rem .9rem;
+    border-bottom: 1px solid var(--rule-2);
+    vertical-align: baseline;
+  }
+
+  tbody tr:last-child td { border-bottom: 0; }
+
+  th {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+    background: var(--surface-2);
+    white-space: nowrap;
+  }
+
+  td:first-child { white-space: nowrap; }
+  td .name { font-family: var(--mono); font-size: 12.5px; color: var(--ink); }
+  td .type { font-family: var(--mono); font-size: 12px; color: var(--mag); }
+  td .def { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+
+  /* ---- lists ------------------------------------------------------- */
+
+  ul.notes {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: .85rem;
+    max-width: var(--measure);
+  }
+
+  ul.notes li {
+    padding-left: 1.15rem;
+    position: relative;
+    color: var(--ink-2);
+  }
+
+  ul.notes li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: .72em;
+    width: .5rem;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  /* ---- source block ------------------------------------------------ */
+
+  .source-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: .06em;
+    color: var(--muted);
+    border: 1px solid var(--rule);
+    border-bottom: 0;
+    border-radius: 3px 3px 0 0;
+    background: var(--surface-2);
+    padding: .55rem .9rem;
+  }
+
+  .source-head + .code {
+    border-radius: 0 0 3px 3px;
+    max-height: 32rem;
+    overflow: auto;
+    background: var(--surface);
+  }
+
+  button.copy {
+    font: inherit;
+    font-family: var(--mono);
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    font-size: 10.5px;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: .3rem .7rem;
+    cursor: pointer;
+    transition: border-color .15s, color .15s;
+  }
+
+  button.copy:hover { border-color: var(--accent); color: var(--accent); }
+  button.copy[data-done="1"] { color: var(--accent); border-color: var(--accent); }
+
+  footer.foot {
+    padding: 2.5rem 0 0;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: .06em;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem 1.5rem;
+  }
+
+  /* ---- demo content: code panes ------------------------------------ */
+
+  .pane-code {
+    margin: 0;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 2.9rem clamp(.55rem, 2.4vw, 1.25rem) 1.4rem;
+    font-size: clamp(9px, 1.55vw, 13px);
+    line-height: 1.7;
+    white-space: pre;
+    overflow: hidden;
+    background: var(--surface);
+    color: var(--ink);
+  }
+
+  .pane-code.is-before { background: var(--surface-2); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="masthead">
+    <div class="eyebrow">
+      <span><b>component</b> &nbsp;v1.0.0</span>
+      <span>vanilla js</span>
+      <span>no dependencies</span>
+    </div>
+    <h1><span>&lt;</span>before-after<span>&gt;</span></h1>
+    <p class="lede">
+      A custom element that wipes between two versions of the same thing &mdash; a photo before and
+      after grading, a screen before and after a redesign, a function before and after a refactor.
+      Drag the handle or focus it and use the arrow keys.
+    </p>
+    <div class="facts">
+      <span>source <i>~12 KB</i></span>
+      <span>shadow DOM <i>open</i></span>
+      <span>a11y <i>role=slider</i></span>
+      <span>license <i>MIT</i></span>
+    </div>
+  </header>
+
+  <div class="hero-demo">
+    <div class="plate">
+      <before-after
+        id="hero"
+        before-label="Original"
+        after-label="Graded"
+        value="42"
+        label="Colour grading comparison"></before-after>
+    </div>
+    <div class="plate-cap">
+      <span>Fig. 1 &nbsp;&middot;&nbsp; ungraded capture / final grade</span>
+      <span class="readout" id="hero-readout">value <b>42</b> &nbsp; last event <b>&mdash;</b></span>
+    </div>
+  </div>
+
+  <main>
+
+    <section class="sec">
+      <div class="sec-label">Install<em>one file</em></div>
+      <div class="sec-body">
+        <p>
+          Drop <code>before-after.js</code> next to your page and load it as a module. The element
+          registers itself; there is nothing to initialise and nothing to import.
+        </p>
+        <pre class="code"><code>&lt;<span class="t">script</span> <span class="a">type</span>=<span class="v">"module"</span> <span class="a">src</span>=<span class="v">"before-after.js"</span>&gt;&lt;/<span class="t">script</span>&gt;
+
+&lt;<span class="t">before-after</span>
+  <span class="a">before-src</span>=<span class="v">"raw.jpg"</span>   <span class="a">before-alt</span>=<span class="v">"Straight out of camera"</span>
+  <span class="a">after-src</span>=<span class="v">"graded.jpg"</span> <span class="a">after-alt</span>=<span class="v">"Colour graded"</span>
+  <span class="a">before-label</span>=<span class="v">"Original"</span>
+  <span class="a">after-label</span>=<span class="v">"Graded"</span>
+  <span class="a">value</span>=<span class="v">"50"</span>&gt;&lt;/<span class="t">before-after</span>&gt;</code></pre>
+        <p>
+          Both panes accept arbitrary markup instead, via the <code>before</code> and
+          <code>after</code> slots. Whatever is in them gets clipped, so the two sides should share
+          the same geometry &mdash; same box, same padding, same line height &mdash; or the wipe will not line up.
+        </p>
+        <pre class="code"><code>&lt;<span class="t">before-after</span>&gt;
+  &lt;<span class="t">div</span> <span class="a">slot</span>=<span class="v">"before"</span>&gt;<span class="c">&lt;!-- any HTML --&gt;</span>&lt;/<span class="t">div</span>&gt;
+  &lt;<span class="t">div</span> <span class="a">slot</span>=<span class="v">"after"</span>&gt;<span class="c">&lt;!-- any HTML --&gt;</span>&lt;/<span class="t">div</span>&gt;
+&lt;/<span class="t">before-after</span>&gt;</code></pre>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-label">Examples<em>slots, axis</em></div>
+      <div class="sec-body">
+        <h2>Two code paths, same shape</h2>
+        <p>
+          Slotted HTML, no images. The panes here are two <code>&lt;pre&gt;</code> blocks padded to the
+          same line count, so the divider reads as a single edit rather than two documents.
+        </p>
+        <div class="plate">
+          <before-after id="code-demo" value="46" before-label="callbacks" after-label="async"
+            label="Callback and async versions of the same function">
+            <pre slot="before" class="pane-code is-before"><code><span class="k">function</span> loadProfile(id, cb) {
+  fetchUser(id, <span class="k">function</span> (err, user) {
+    <span class="k">if</span> (err) <span class="k">return</span> cb(err);
+    fetchPosts(user, <span class="k">function</span> (err, posts) {
+      <span class="k">if</span> (err) <span class="k">return</span> cb(err);
+      fetchStats(user, <span class="k">function</span> (err, stats) {
+        <span class="k">if</span> (err) <span class="k">return</span> cb(err);
+        cb(<span class="k">null</span>, { user, posts, stats });
+      });
+    });
+  });
+}</code></pre>
+            <pre slot="after" class="pane-code"><code><span class="k">async</span> <span class="k">function</span> loadProfile(id) {
+  <span class="k">const</span> user = <span class="k">await</span> fetchUser(id);
+  <span class="k">const</span> [posts, stats] = <span class="k">await</span> Promise.all([
+    fetchPosts(user),
+    fetchStats(user),
+  ]);
+  <span class="k">return</span> { user, posts, stats };
+}
+
+
+</code></pre>
+          </before-after>
+        </div>
+        <div class="plate-cap"><span>Fig. 2 &nbsp;&middot;&nbsp; slotted markup, horizontal axis</span></div>
+
+        <h2 style="margin-top:1.5rem">Wiping down instead of across</h2>
+        <p>
+          <code>orientation="vertical"</code> moves the divider top to bottom; the before pane is the
+          top one. Everything else &mdash; keys, events, parts &mdash; behaves identically.
+        </p>
+        <div class="demo-grid">
+          <div>
+            <div class="plate">
+              <before-after id="vert" orientation="vertical" value="44"
+                before-label="Wireframe" after-label="Design"
+                label="Wireframe and finished design comparison"></before-after>
+            </div>
+            <div class="plate-cap"><span>Fig. 3 &nbsp;&middot;&nbsp; vertical axis</span></div>
+          </div>
+          <div>
+            <div class="plate">
+              <before-after id="themed" value="55" grab="anywhere"
+                label="Restyled comparison slider"
+                style="--ba-divider-color: var(--mag); --ba-handle-bg: var(--mag); --ba-handle-color: #fff; --ba-handle-size: 34px; --ba-radius: 14px; --ba-divider-width: 1px;"></before-after>
+            </div>
+            <div class="plate-cap"><span>Fig. 4 &nbsp;&middot;&nbsp; custom properties + <code>grab="anywhere"</code></span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-label">API<em>attributes</em></div>
+      <div class="sec-body">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Notes</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="name">value</span></td>
+                <td><span class="type">0&ndash;100</span></td>
+                <td><span class="def">50</span></td>
+                <td>Divider position as a percentage. Sets the starting position and moves the divider whenever it changes; it is not written back during a drag &mdash; read the <code>value</code> property for that.</td>
+              </tr>
+              <tr>
+                <td><span class="name">orientation</span></td>
+                <td><span class="type">horizontal | vertical</span></td>
+                <td><span class="def">horizontal</span></td>
+                <td>Axis the divider travels along. Vertical puts the before pane on top.</td>
+              </tr>
+              <tr>
+                <td><span class="name">before-src</span> / <span class="name">after-src</span></td>
+                <td><span class="type">url</span></td>
+                <td><span class="def">&mdash;</span></td>
+                <td>Shorthand for a plain image pane. Ignored for a side that has slotted content.</td>
+              </tr>
+              <tr>
+                <td><span class="name">before-alt</span> / <span class="name">after-alt</span></td>
+                <td><span class="type">string</span></td>
+                <td><span class="def">""</span></td>
+                <td>Alt text for those images. Empty alt marks the image decorative.</td>
+              </tr>
+              <tr>
+                <td><span class="name">before-label</span> / <span class="name">after-label</span></td>
+                <td><span class="type">string</span></td>
+                <td><span class="def">&mdash;</span></td>
+                <td>Caption chips pinned to the top corners. Each one sits inside its own pane, so it wipes away with it.</td>
+              </tr>
+              <tr>
+                <td><span class="name">label</span></td>
+                <td><span class="type">string</span></td>
+                <td><span class="def">Before and after comparison</span></td>
+                <td>Accessible name for the slider.</td>
+              </tr>
+              <tr>
+                <td><span class="name">grab</span></td>
+                <td><span class="type">handle | anywhere</span></td>
+                <td><span class="def">handle</span></td>
+                <td>Where a drag can start. The default keeps clicks on slotted links and buttons working; <code>anywhere</code> trades that for a larger target.</td>
+              </tr>
+              <tr>
+                <td><span class="name">step</span></td>
+                <td><span class="type">number</span></td>
+                <td><span class="def">1</span></td>
+                <td>Percentage points per arrow key press. <kbd>Page Up</kbd> / <kbd>Page Down</kbd> move ten steps.</td>
+              </tr>
+              <tr>
+                <td><span class="name">aspect</span></td>
+                <td><span class="type">ratio</span></td>
+                <td><span class="def">&mdash;</span></td>
+                <td>Forces the frame ratio, e.g. <code>16 / 9</code>. Without it the element takes its ratio from the first image, or from the taller pane when the panes are markup.</td>
+              </tr>
+              <tr>
+                <td><span class="name">disabled</span></td>
+                <td><span class="type">boolean</span></td>
+                <td><span class="def">false</span></td>
+                <td>Freezes the divider and removes the handle from the tab order.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Properties and events</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Member</th><th>Kind</th><th>Notes</th></tr></thead>
+            <tbody>
+              <tr><td><span class="name">value</span></td><td><span class="type">get / set</span></td><td>Live position as a number. Setting it moves the divider without firing an event.</td></tr>
+              <tr><td><span class="name">orientation</span></td><td><span class="type">get / set</span></td><td>Reflects the attribute.</td></tr>
+              <tr><td><span class="name">disabled</span></td><td><span class="type">get / set</span></td><td>Reflects the attribute.</td></tr>
+              <tr><td><span class="name">input</span></td><td><span class="type">event</span></td><td>Fires on every movement, including each arrow key press. <code>event.detail.value</code> carries the position.</td></tr>
+              <tr><td><span class="name">change</span></td><td><span class="type">event</span></td><td>Fires once the gesture ends &mdash; pointer released, or key released &mdash; and only if the divider actually moved. Use this one for anything expensive.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Styling</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Custom property</th><th>Default</th><th>Affects</th></tr></thead>
+            <tbody>
+              <tr><td><span class="name">--ba-divider-width</span></td><td><span class="def">2px</span></td><td>Thickness of the seam</td></tr>
+              <tr><td><span class="name">--ba-divider-color</span></td><td><span class="def">#fff</span></td><td>Seam colour</td></tr>
+              <tr><td><span class="name">--ba-handle-size</span></td><td><span class="def">44px</span></td><td>Handle diameter</td></tr>
+              <tr><td><span class="name">--ba-handle-bg</span></td><td><span class="def">#fff</span></td><td>Handle fill</td></tr>
+              <tr><td><span class="name">--ba-handle-color</span></td><td><span class="def">#111</span></td><td>Chevron colour</td></tr>
+              <tr><td><span class="name">--ba-radius</span></td><td><span class="def">0</span></td><td>Frame corner radius</td></tr>
+              <tr><td><span class="name">--ba-object-fit</span></td><td><span class="def">cover</span></td><td>Fit of slotted media</td></tr>
+              <tr><td><span class="name">--ba-label-bg</span></td><td><span class="def">rgb(0 0 0 / .55)</span></td><td>Caption chip background</td></tr>
+              <tr><td><span class="name">--ba-label-color</span></td><td><span class="def">#fff</span></td><td>Caption chip text</td></tr>
+              <tr><td><span class="name">--ba-focus-ring</span></td><td><span class="def">#0aa</span></td><td>Focus outline colour</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          For anything the custom properties do not reach, the shadow parts are exposed:
+          <code>frame</code>, <code>pane</code>, <code>before</code>, <code>after</code>,
+          <code>divider</code>, <code>handle</code> and <code>label</code>.
+        </p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-label">Behaviour<em>keys, edges</em></div>
+      <div class="sec-body">
+        <h3>Keyboard</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Key</th><th>Result</th></tr></thead>
+            <tbody>
+              <tr><td><kbd>&larr;</kbd> <kbd>&uarr;</kbd></td><td>Move one step toward the before side</td></tr>
+              <tr><td><kbd>&rarr;</kbd> <kbd>&darr;</kbd></td><td>Move one step toward the after side</td></tr>
+              <tr><td><kbd>Page Up</kbd> <kbd>Page Down</kbd></td><td>Move ten steps</td></tr>
+              <tr><td><kbd>Home</kbd> <kbd>End</kbd></td><td>Jump to 0% or 100%</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h3>Worth knowing</h3>
+        <ul class="notes">
+          <li>The handle is a real <code>&lt;button&gt;</code> carrying <code>role="slider"</code>, so it is tabbable, announces its position, and works inside a form without submitting it.</li>
+          <li>Panes are stacked in one grid cell, so the frame is as tall as the taller side and nothing is cropped by surprise.</li>
+          <li>Clipping is <code>clip-path</code> on percentages &mdash; resizing the element needs no JavaScript and no re-measure.</li>
+          <li>Pointer capture is taken on the frame, so a drag survives the pointer leaving the element.</li>
+          <li>Keyboard moves are eased; pointer drags are not. Under <code>prefers-reduced-motion</code> nothing is eased.</li>
+          <li>The divider position is a percentage of the frame, never a pixel offset, so it holds through layout changes and zoom.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-label">Source<em>before-after.js</em></div>
+      <div class="sec-body">
+        <p>
+          This is the exact module running the demos above &mdash; the page reads its own script tag to fill
+          the listing, so what you copy is what you just used.
+        </p>
+        <div class="source-head">
+          <span>before-after.js</span>
+          <button class="copy" id="copy-src" type="button">Copy</button>
+        </div>
+        <pre class="code"><code id="src-out"></code></pre>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="foot">
+    <span>&lt;before-after&gt; v1.0.0</span>
+    <span>MIT</span>
+    <span>Demo artwork generated in-page as SVG</span>
+  </footer>
+</div>
+
+<script type="module" src="dist/before-after.es.js"></script>
+
+<script type="module">
+  /* ---------- demo artwork: two SVG data URIs per pair ---------- */
+
+  const svg = (w, h, body) =>
+    'data:image/svg+xml,' + encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}">${body}</svg>`
+    );
+
+  const RIDGE_FAR = 'M0 470 L168 318 L296 416 L432 292 L578 470 Z';
+  const RIDGE_MID = 'M396 470 L638 262 L804 398 L948 314 L1200 470 Z';
+  const RIDGE_NEAR = 'M0 470 L182 398 L342 466 L520 380 L706 468 L902 404 L1064 460 L1200 418 L1200 470 Z';
+
+  const landscape = (c) => svg(1200, 750, `
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="${c.skyTop}"/><stop offset=".58" stop-color="${c.skyMid}"/>
+        <stop offset="1" stop-color="${c.skyBot}"/>
+      </linearGradient>
+      <linearGradient id="wat" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="${c.watTop}"/><stop offset="1" stop-color="${c.watBot}"/>
+      </linearGradient>
+      <linearGradient id="haze" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="${c.haze}" stop-opacity="0"/>
+        <stop offset="1" stop-color="${c.haze}" stop-opacity="${c.hazeO}"/>
+      </linearGradient>
+      <radialGradient id="glow">
+        <stop offset="0" stop-color="${c.sun}" stop-opacity="${c.glow}"/>
+        <stop offset="1" stop-color="${c.sun}" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="path" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="${c.sun}" stop-opacity="0"/>
+        <stop offset=".5" stop-color="${c.sun}" stop-opacity="${c.glow}"/>
+        <stop offset="1" stop-color="${c.sun}" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#fff" stop-opacity=".9"/>
+        <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+      </linearGradient>
+      <mask id="below"><rect y="470" width="1200" height="280" fill="url(#fade)"/></mask>
+    </defs>
+    <rect width="1200" height="750" fill="url(#sky)"/>
+    <circle cx="838" cy="286" r="230" fill="url(#glow)"/>
+    <circle cx="838" cy="286" r="62" fill="${c.sun}" opacity="${c.sunO}"/>
+    <path d="${RIDGE_FAR}" fill="${c.far}"/>
+    <rect y="286" width="1200" height="184" fill="url(#haze)"/>
+    <path d="${RIDGE_MID}" fill="${c.mid}"/>
+    <path d="${RIDGE_NEAR}" fill="${c.near}"/>
+    <rect y="468" width="1200" height="282" fill="url(#wat)"/>
+    <g transform="translate(0 940) scale(1 -1)" mask="url(#below)" opacity=".5">
+      <path d="${RIDGE_MID}" fill="${c.mid}"/><path d="${RIDGE_NEAR}" fill="${c.near}"/>
+    </g>
+    <rect x="700" y="470" width="276" height="280" fill="url(#path)" mask="url(#below)"/>
+    <rect y="467" width="1200" height="3" fill="${c.horizon}" opacity=".85"/>
+  `);
+
+  const FLAT = landscape({
+    skyTop: '#aeb8bd', skyMid: '#c3cacc', skyBot: '#d2d6d5', sun: '#e8e6de', sunO: '.4',
+    haze: '#d9dedf', hazeO: '.5', far: '#9aa5aa', mid: '#849097', near: '#6d7b83',
+    watTop: '#93a2a8', watBot: '#7c8a90', horizon: '#c8d0d2', glow: '.16',
+  });
+
+  const GRADED = landscape({
+    skyTop: '#0f3350', skyMid: '#6b5f79', skyBot: '#eda45f', sun: '#ffdfae', sunO: '.96',
+    haze: '#e79a63', hazeO: '.62', far: '#3a5f74', mid: '#1e3d4e', near: '#0c2029',
+    watTop: '#b4763f', watBot: '#08191f', horizon: '#ffd8a0', glow: '.55',
+  });
+
+  const screen = (c) => svg(900, 700, `
+    <rect width="900" height="700" fill="${c.bg}"/>
+    <rect width="900" height="62" fill="${c.bar}"/>
+    <rect x="28" y="24" width="96" height="14" rx="3" fill="${c.barMark}"/>
+    <g fill="${c.barMark}" opacity=".7">
+      <rect x="612" y="26" width="54" height="10" rx="3"/><rect x="686" y="26" width="54" height="10" rx="3"/>
+    </g>
+    <rect x="770" y="18" width="102" height="26" rx="${c.pill}" fill="${c.cta}" stroke="${c.ctaLine}"
+      stroke-width="${c.dash ? 1.5 : 0}" stroke-dasharray="${c.dash ? '5 4' : '0'}"/>
+    <rect x="48" y="106" width="804" height="214" rx="${c.r}" fill="${c.hero}" stroke="${c.line}"
+      stroke-width="1.5" stroke-dasharray="${c.dash ? '6 5' : '0'}"/>
+    <g fill="${c.heroText}">
+      <rect x="88" y="152" width="360" height="24" rx="4"/>
+      <rect x="88" y="192" width="470" height="12" rx="4" opacity=".72"/>
+      <rect x="88" y="216" width="392" height="12" rx="4" opacity=".72"/>
+      <rect x="88" y="254" width="132" height="34" rx="${c.pill}" fill="${c.heroCta}"/>
+    </g>
+    <g>
+      <rect x="48" y="360" width="252" height="196" rx="${c.r}" fill="${c.card}" stroke="${c.line}"
+        stroke-width="1.5" stroke-dasharray="${c.dash ? '6 5' : '0'}"/>
+      <rect x="324" y="360" width="252" height="196" rx="${c.r}" fill="${c.card}" stroke="${c.line}"
+        stroke-width="1.5" stroke-dasharray="${c.dash ? '6 5' : '0'}"/>
+      <rect x="600" y="360" width="252" height="196" rx="${c.r}" fill="${c.card}" stroke="${c.line}"
+        stroke-width="1.5" stroke-dasharray="${c.dash ? '6 5' : '0'}"/>
+    </g>
+    <g fill="${c.chip}">
+      <rect x="76" y="388" width="46" height="16" rx="${c.pill}"/>
+      <rect x="352" y="388" width="46" height="16" rx="${c.pill}"/>
+      <rect x="628" y="388" width="46" height="16" rx="${c.pill}"/>
+    </g>
+    <g fill="${c.text}">
+      <rect x="76" y="424" width="180" height="14" rx="3"/><rect x="76" y="452" width="196" height="9" rx="3" opacity=".65"/>
+      <rect x="76" y="472" width="150" height="9" rx="3" opacity=".65"/>
+      <rect x="352" y="424" width="164" height="14" rx="3"/><rect x="352" y="452" width="196" height="9" rx="3" opacity=".65"/>
+      <rect x="352" y="472" width="132" height="9" rx="3" opacity=".65"/>
+      <rect x="628" y="424" width="190" height="14" rx="3"/><rect x="628" y="452" width="180" height="9" rx="3" opacity=".65"/>
+      <rect x="628" y="472" width="160" height="9" rx="3" opacity=".65"/>
+    </g>
+    <rect x="48" y="600" width="804" height="1.5" fill="${c.line}"/>
+    <g fill="${c.text}" opacity=".55">
+      <rect x="48" y="628" width="120" height="10" rx="3"/><rect x="196" y="628" width="96" height="10" rx="3"/>
+      <rect x="320" y="628" width="110" height="10" rx="3"/>
+    </g>
+  `);
+
+  const WIRE = screen({
+    bg: '#f3f5f6', bar: '#e6eaec', barMark: '#b9c2c6', cta: '#eef1f2', ctaLine: '#aeb9be',
+    hero: '#e9edee', heroText: '#c2cbcf', heroCta: '#aeb9be', card: '#eef1f2', chip: '#c8d0d3',
+    text: '#c2cbcf', line: '#b3bec3', r: 2, pill: 2, dash: true,
+  });
+
+  const DESIGN = screen({
+    bg: '#ffffff', bar: '#0e1518', barMark: '#8fd7e6', cta: '#00a8c8', ctaLine: 'none',
+    hero: '#0d3f4d', heroText: '#d7eef4', heroCta: '#ff8a3d', card: '#f7fafb', chip: '#00a8c8',
+    text: '#4b6068', line: '#dde5e8', r: 12, pill: 999, dash: false,
+  });
+
+  const hero = document.getElementById('hero');
+  hero.setAttribute('before-src', FLAT);
+  hero.setAttribute('after-src', GRADED);
+  hero.setAttribute('before-alt', 'Flat, ungraded photograph of a lake at dusk');
+  hero.setAttribute('after-alt', 'The same photograph after colour grading, warm and contrasty');
+
+  const vert = document.getElementById('vert');
+  vert.setAttribute('before-src', WIRE);
+  vert.setAttribute('after-src', DESIGN);
+  vert.setAttribute('before-alt', 'Greyscale wireframe of a marketing page');
+  vert.setAttribute('after-alt', 'The finished visual design of the same page');
+
+  const themed = document.getElementById('themed');
+  themed.setAttribute('before-src', FLAT);
+  themed.setAttribute('after-src', GRADED);
+  themed.setAttribute('before-alt', '');
+  themed.setAttribute('after-alt', '');
+
+  /* ---------- live readout, driven by the component events ---------- */
+
+  const readout = document.getElementById('hero-readout');
+  const paint = (name) => {
+    readout.innerHTML = 'value <b>' + Math.round(hero.value) + '</b> &nbsp; last event <b>' + name + '</b>';
+  };
+  hero.addEventListener('input', () => paint('input'));
+  hero.addEventListener('change', () => paint('change'));
+
+  /* ---------- source listing, read back off the module tag ---------- */
+
+  const KEYWORDS = 'const|let|var|function|class|extends|return|if|else|for|of|in|new|this|super|static|get|set|null|true|false|typeof|instanceof|try|catch|throw|switch|case|break|continue|do|while|delete|void|async|await|export|import|from|default';
+
+  const TOKENS = new RegExp(
+    '(\\/\\*[\\s\\S]*?\\*\\/|\\/\\/[^\\n]*)' +
+    '|(`(?:\\\\[\\s\\S]|[^`\\\\])*`)' +
+    '|(\'(?:\\\\.|[^\'\\\\])*\'|"(?:\\\\.|[^"\\\\])*")' +
+    '|\\b(' + KEYWORDS + ')\\b' +
+    '|\\b(\\d+(?:\\.\\d+)?)\\b', 'g');
+
+  const source = document.getElementById('ba-source').textContent.trim();
+
+  document.getElementById('src-out').innerHTML = source
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(TOKENS, (m, comment, tpl, string, keyword, number) => {
+      if (comment) return '<span class="c">' + comment + '</span>';
+      if (tpl) return '<span class="tpl">' + tpl + '</span>';
+      if (string) return '<span class="s">' + string + '</span>';
+      if (keyword) return '<span class="k">' + keyword + '</span>';
+      return '<span class="n">' + number + '</span>';
+    });
+
+  const copy = document.getElementById('copy-src');
+  copy.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(source);
+      copy.textContent = 'Copied';
+    } catch {
+      copy.textContent = 'Select all + copy';
+    }
+    copy.dataset.done = '1';
+    setTimeout(() => { copy.textContent = 'Copy'; delete copy.dataset.done; }, 2000);
+  });
+</script>
+</body>
+</html>

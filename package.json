@@ -1,0 +1,28 @@
+{
+  "name": "before-after",
+  "version": "1.0.0",
+  "description": "A GOOD DESCRIPTION",
+  "files":["dist"],
+  "main":"./dist/before-after.umd.js",
+  "module":"./dist/before-after.es.js",
+  "exports": {
+    ".": {
+      "import": "./dist/before-after.es.js",
+      "require": "./dist/before-after.umd.js"
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "clean": "rm -rf dist",
+    "clean:all": "rm -rf dist node_modules"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs",
+  "devDependencies": {
+    "vite": "^8.1.5"
+  }
+}
