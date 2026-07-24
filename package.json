@@ -1,10 +1,14 @@
 {
   "name": "before-after",
   "version": "1.0.0",
-  "description": "A GOOD DESCRIPTION",
+  "description": "A simple, lightweight, and responsive before-after image comparison slider built with vanilla JavaScript.",
+  "homepage": "https://ruthlessfish.github.io/before-after",
+  "bugs": {
+    "url": "https://github.com/ruthlessfish/before-after/issues",
+    "email": "bubbafoley@gmail.com"
+  },
   "files":["dist"],
-  "main":"./dist/before-after.umd.js",
-  "module":"./dist/before-after.es.js",
+  "browser":"./dist/before-after.es.js",
   "exports": {
     ".": {
       "import": "./dist/before-after.es.js",
@@ -14,14 +18,25 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "clean": "rm -rf dist",
-    "clean:all": "rm -rf dist node_modules"
+    "preview": "vite preview"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "before-after",
+    "image-comparison",
+    "image-slider",
+    "image-comparison-slider",
+    "image-comparison-viewer",
+    "image-comparison-tool",
+    "image-comparison-plugin",
+    "image-comparison-library",
+    "image-comparison-component",
+    "image-comparison-widget",
+    "image-comparison-ui"
+  ],
+  "author": "Shane Pearson <bubbafoley@gmail.com>",
   "license": "MIT",
   "type": "commonjs",
+  "repository":"github:ruthlessfish/before-after",
   "devDependencies": {
     "vite": "^8.1.5"
   }
