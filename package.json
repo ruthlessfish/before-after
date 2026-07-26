@@ -38,6 +38,7 @@
   "type": "commonjs",
   "repository":"github:ruthlessfish/before-after",
   "devDependencies": {
+    "terser": "^5.43.1",
     "vite": "^8.1.5"
   }
 }
