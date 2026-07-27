@@ -56,8 +56,31 @@ function minifyTemplateModule() {
   }
 }
 
+const DIST_TAG = 'dist/before-after.es.js'
+
+// index.html ships pointing at dist/ because GitHub Pages serves this repo as-is.
+// Dev should run the real source, so the tag is swapped on the way out of the server.
+function devUsesSource() {
+  return {
+    name: 'dev-uses-source',
+    apply: 'serve',
+    transformIndexHtml(html) {
+      // Loud on purpose: falling through would put the dev server back to serving
+      // the built file, which is the exact stale-code trap this plugin removes.
+      if (!html.includes(DIST_TAG)) {
+        throw new Error(
+          `dev-uses-source: no "${DIST_TAG}" in index.html — the dev server would ` +
+          `silently serve the built file. Update DIST_TAG in vite.config.js.`
+        )
+      }
+
+      return html.replaceAll(DIST_TAG, '/lib/main.js')
+    }
+  }
+}
+
 module.exports = defineConfig({
-  plugins: [minifyTemplateModule()],
+  plugins: [minifyTemplateModule(), devUsesSource()],
   build: {
     minify: 'terser',
     lib: {

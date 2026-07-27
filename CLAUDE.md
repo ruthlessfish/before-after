@@ -20,9 +20,9 @@ npx vitest run -t 'clamps'                       # A single test by name
 
 First checkout needs `npx playwright install chromium`. There is no linter or formatter configured.
 
-**`npm run dev` alone is not enough to see changes.** `index.html` loads `dist/before-after.es.js`, not `lib/main.js`. After editing anything in `lib/`, run `npm run build` before checking the demo.
+`npm run dev` serves `lib/` — edit and reload, no build step. The committed `index.html` points at `dist/before-after.es.js`; the `dev-uses-source` plugin swaps that for `/lib/main.js` in the dev server's response only.
 
-`dist/` is committed intentionally — `homepage` is a GitHub Pages site served from the repo, and the demo page needs the built file. Rebuild and commit `dist/` alongside source changes.
+`dist/` is committed intentionally — `homepage` is a GitHub Pages site served from the repo, and the published page loads the built file. Rebuild and commit `dist/` alongside source changes, even though you no longer need to for local work.
 
 ## Tests
 
@@ -43,7 +43,7 @@ A single custom element, `<before-after>`, that clips one pane over another. Van
 
 - `lib/main.js` — the `BeforeAfter` class and `customElements.define`. Everything behavioral lives here.
 - `lib/template.js` — two exported template literals: `tmpl` (the full `<style>` + shadow DOM markup) and `chevrons` (the handle SVG). No logic.
-- `vite.config.js` — library build plus a custom `minify-template-module` plugin.
+- `vite.config.js` — library build plus two custom plugins, one per mode: `minify-template-module` (`apply: 'build'`) and `dev-uses-source` (`apply: 'serve'`).
 - `index.html` — the demo/docs page, also the published site. Not part of the library build.
 
 `vite.config.js` uses CommonJS (`require`) because `package.json` sets `"type": "commonjs"`; `lib/` is ESM and Vite handles it. `tsconfig.json` is vestigial — it points at a nonexistent `./src` and nothing runs `tsc`.
@@ -58,6 +58,16 @@ This means the plugin is coupled to the exact shape of `lib/template.js`:
 - The literals must contain no `${}` interpolation and no backticks.
 - `tmpl` must keep its single leading `<style>...</style>` block, or the whole thing falls through to HTML-only minification and the CSS goes unminified.
 - The `transform` hook matches on the path ending in `lib/template.js`. Moving or renaming that file breaks the plugin without any error.
+
+### The dev source-swap plugin
+
+`index.html` has to ship pointing at `dist/` — GitHub Pages serves this repo as-is. `devUsesSource()` rewrites that one tag to `/lib/main.js` in `transformIndexHtml`, so the dev server runs real source while the committed file stays correct for the published site.
+
+It matches the literal `DIST_TAG` string, so it is coupled to `index.html` the same way the minifier is coupled to `template.js` — but it **throws** when the string is missing rather than falling through, because a silent no-op here restores exactly the stale-code problem it exists to prevent. Changing the script tag's `src` means changing `DIST_TAG`.
+
+The demo's Source panel reads `document.getElementById('ba-source').src` and fetches it, so it follows the swap: readable `lib/main.js` in dev, the built file on Pages. Keep that `id` on the tag.
+
+`test/node/dev-html.test.js` guards both directions — that dev gets `lib/`, and that the committed HTML still points at `dist/`.
 
 ### Positioning model
 

@@ -762,7 +762,7 @@
   </footer>
 </div>
 
-<script type="module" src="dist/before-after.es.js"></script>
+<script type="module" id="ba-source" src="dist/before-after.es.js"></script>
 
 <script type="module">
   /* ---------- demo artwork: two SVG data URIs per pair ---------- */
@@ -926,7 +926,12 @@
     '|\\b(' + KEYWORDS + ')\\b' +
     '|\\b(\\d+(?:\\.\\d+)?)\\b', 'g');
 
-  const source = document.getElementById('ba-source').textContent.trim();
+  // An external script has no textContent, so read the file the tag actually loaded.
+  // src is the resolved URL, so this follows whichever copy the page is running.
+  const tag = document.getElementById('ba-source');
+  const source = (await fetch(tag.src).then((r) => r.text()))
+    .replace(/\n\/\/# sourceMappingURL=\S*/, '')  // dev only; vite inlines a map
+    .trim();
 
   document.getElementById('src-out').innerHTML = source
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')

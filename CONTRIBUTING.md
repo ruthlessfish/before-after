@@ -40,4 +40,4 @@ The suite runs on [Vitest](https://vitest.dev). Component tests live in `test/br
 
 - Write tests for new features and bug fixes.
 - Run all tests to ensure nothing is broken.
-- Rebuild with `npm run build` and commit `dist/` alongside any change to `lib/`; the demo page and the published site load the built file.
+- Rebuild with `npm run build` and commit `dist/` alongside any change to `lib/`. This is for the published site, which loads the built file — `npm run dev` serves `lib/` directly, so you do not need a build to see your own changes.
