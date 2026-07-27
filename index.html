@@ -14,7 +14,7 @@
   <header class="masthead">
     <div class="eyebrow">
       <span><b>component</b> &nbsp;v1.0.0</span>
-      <span>vanilla js</span>
+      <span>typescript</span>
       <span>no dependencies</span>
     </div>
     <h1><span>&lt;</span>before-after<span>&gt;</span></h1>
@@ -52,10 +52,10 @@
       <div class="sec-label">Install<em>one file</em></div>
       <div class="sec-body">
         <p>
-          Drop <code>before-after.js</code> next to your page and load it as a module. The element
+          Drop <code>before-after.es.js</code> next to your page and load it as a module. The element
           registers itself; there is nothing to initialise and nothing to import.
         </p>
-        <pre class="code"><code>&lt;<span class="t">script</span> <span class="a">type</span>=<span class="v">"module"</span> <span class="a">src</span>=<span class="v">"before-after.js"</span>&gt;&lt;/<span class="t">script</span>&gt;
+        <pre class="code"><code>&lt;<span class="t">script</span> <span class="a">type</span>=<span class="v">"module"</span> <span class="a">src</span>=<span class="v">"before-after.es.js"</span>&gt;&lt;/<span class="t">script</span>&gt;
 
 &lt;<span class="t">before-after</span>
   <span class="a">before-src</span>=<span class="v">"raw.jpg"</span>   <span class="a">before-alt</span>=<span class="v">"Straight out of camera"</span>
@@ -280,14 +280,14 @@
     </section>
 
     <section class="sec">
-      <div class="sec-label">Source<em>before-after.js</em></div>
+      <div class="sec-label">Source<em>before-after.es.js</em></div>
       <div class="sec-body">
         <p>
           This is the exact module running the demos above &mdash; the page reads its own script tag to fill
           the listing, so what you copy is what you just used.
         </p>
         <div class="source-head">
-          <span>before-after.js</span>
+          <span>before-after.es.js</span>
           <button class="copy" id="copy-src" type="button">Copy</button>
         </div>
         <pre class="code"><code id="src-out"></code></pre>

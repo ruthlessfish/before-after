@@ -1,8 +1,9 @@
-[![version](https://badgen.net/static/version/1.1.0/orange)](https://badgen.net/static/version/1.1.0/orange)
+[![version](https://badgen.net/static/version/1.0.0/orange)](https://badgen.net/static/version/1.0.0/orange)
 [![license](https://badgen.net/static/license/MIT/blue)](https://badgen.net/static/license/MIT/blue)
 [![size](https://badgen.net/static/source/10kb/red)](https://badgen.net/static/source/10kb/green)
 [![gzip](https://badgen.net/static/gzip/3kb/green)](https://badgen.net/static/gzip/3kb/green)
-[![dependencies](https://badgen.net/static/vanilla/js/purple)](https://badgen.net/static/vanilla/js/purple)
+[![dependencies](https://badgen.net/static/dependencies/none/purple)](https://badgen.net/static/dependencies/none/purple)
+[![types](https://badgen.net/static/types/included/blue)](https://badgen.net/static/types/included/blue)
 
 # &lt;before-after&gt;
 
@@ -48,8 +49,6 @@ Both panes accept arbitrary markup instead, via the before and after slots. What
 ```
 
 ## API
-
-TODO: Make this section a markdown table.
 
 | Attribute                  | Type                   | Default                     | Notes                                                                                                                                                                            |
 |----------------------------|------------------------|-----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
