@@ -30,5 +30,14 @@ If you have an idea for a new feature or improvement, please open an issue on Gi
 
 ### Testing
 
+```bash
+npm install
+npx playwright install chromium   # once, on first checkout
+npm test
+```
+
+The suite runs on [Vitest](https://vitest.dev). Component tests live in `test/browser/` and run in real headless Chromium — the element is mostly CSS and pointer behaviour, so a simulated DOM would not tell us much. `test/node/` holds a guard for the build-time template minifier.
+
 - Write tests for new features and bug fixes.
 - Run all tests to ensure nothing is broken.
+- Rebuild with `npm run build` and commit `dist/` alongside any change to `lib/`; the demo page and the published site load the built file.

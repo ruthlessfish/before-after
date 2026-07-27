@@ -7,8 +7,10 @@
     "url": "https://github.com/ruthlessfish/before-after/issues",
     "email": "bubbafoley@gmail.com"
   },
-  "files":["dist"],
-  "browser":"./dist/before-after.es.js",
+  "files": [
+    "dist"
+  ],
+  "browser": "./dist/before-after.es.js",
   "exports": {
     ".": {
       "import": "./dist/before-after.es.js",
@@ -18,7 +20,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:browser": "vitest run --project browser",
+    "test:node": "vitest run --project node"
   },
   "keywords": [
     "before-after",
@@ -36,9 +42,13 @@
   "author": "Shane Pearson <bubbafoley@gmail.com>",
   "license": "MIT",
   "type": "commonjs",
-  "repository":"github:ruthlessfish/before-after",
+  "repository": "github:ruthlessfish/before-after",
   "devDependencies": {
+    "@vitest/browser": "^4.1.10",
+    "@vitest/browser-playwright": "^4.1.10",
+    "playwright": "^1.62.0",
     "terser": "^5.43.1",
-    "vite": "^8.1.5"
+    "vite": "^8.1.5",
+    "vitest": "^4.1.10"
   }
 }
