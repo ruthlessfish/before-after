@@ -1,0 +1,14 @@
+{
+  // Declaration emit only -- Vite's lib build produces the bundle, never .d.ts.
+  // `include` must stay limited to lib/: tsc infers rootDir from the common source
+  // directory, so widening this shifts the output to dist/types/lib/.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "rootDir": "lib",
+    "outDir": "dist/types"
+  },
+  "include": ["lib"]
+}

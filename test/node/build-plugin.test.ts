@@ -1,43 +1,46 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { createRequire } from 'node:module';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { minifyTemplateSource } from '../../build/plugins';
+import { findPlugin } from './config';
 
-const require = createRequire(import.meta.url);
 const root = fileURLToPath(new URL('../..', import.meta.url));
-
-const config = require(path.join(root, 'vite.config.js'));
-const plugin = config.plugins.flat().find((p) => p?.name === 'minify-template-module');
-
-const templatePath = path.join(root, 'lib', 'template.js');
+const templatePath = path.join(root, 'lib', 'template.ts');
 const templateSource = readFileSync(templatePath, 'utf8');
 
-/** Run the plugin the way Vite would. */
-const transform = (code = templateSource, id = templatePath) =>
-  plugin.transform.call({}, code, id)?.code ?? null;
+const transform = (code = templateSource, id = templatePath) => minifyTemplateSource(code, id);
 
 /**
  * These tests guard a coupling that fails silently. The plugin rewrites the
- * *source text* of lib/template.js with regexes, so renaming an export, moving
+ * *source text* of lib/template.ts with regexes, so renaming an export, moving
  * the file, or introducing interpolation stops the minification without any
  * build error -- the bundle just quietly gets bigger.
  */
 describe('the plugin is wired up', () => {
+  const plugin = findPlugin('minify-template-module');
+
   it('is registered in the build config', () => {
     expect(plugin).toBeTruthy();
   });
 
   it('only runs during a build, leaving the dev server serving readable source', () => {
-    expect(plugin.apply).toBe('build');
+    expect(plugin?.apply).toBe('build');
   });
 
-  it('still matches lib/template.js at its current path', () => {
+  // Without `pre` this runs after vite:oxc, which strips type annotations --
+  // so an annotated export would miss the source but match the transformed
+  // output, quietly invalidating every source-shape assertion below.
+  it('runs before the TypeScript transform, so it sees raw source', () => {
+    expect(plugin?.enforce).toBe('pre');
+  });
+
+  it('still matches lib/template.ts at its current path', () => {
     expect(transform()).not.toBeNull();
   });
 
   it('ignores every other module', () => {
-    expect(transform(templateSource, path.join(root, 'lib', 'main.js'))).toBeNull();
+    expect(transform(templateSource, path.join(root, 'lib', 'main.ts'))).toBeNull();
   });
 });
 
@@ -48,7 +51,7 @@ describe('the template module still has the shape the plugin expects', () => {
   });
 
   it('keeps a single leading style block in tmpl, which is what splits CSS from HTML', () => {
-    const body = templateSource.match(/export const tmpl\s*=\s*`([\s\S]*?)`;?/)[1];
+    const body = templateSource.match(/export const tmpl\s*=\s*`([\s\S]*?)`;?/)![1]!;
     expect(body.match(/<style>/g)).toHaveLength(1);
     expect(body.trimStart().startsWith('<style>')).toBe(true);
   });
@@ -59,20 +62,20 @@ describe('the template module still has the shape the plugin expects', () => {
 });
 
 describe('minified output', () => {
-  const output = transform();
+  const output = transform()!;
 
   it('actually gets smaller', () => {
     expect(output.length).toBeLessThan(templateSource.length);
   });
 
   it('strips CSS comments', () => {
-    const css = output.match(/<style>([\s\S]*?)<\/style>/)[1];
+    const css = output.match(/<style>([\s\S]*?)<\/style>/)![1]!;
     expect(css).not.toContain('/*');
     expect(templateSource).toContain('/*');
   });
 
   it('collapses whitespace in the CSS', () => {
-    const css = output.match(/<style>([\s\S]*?)<\/style>/)[1];
+    const css = output.match(/<style>([\s\S]*?)<\/style>/)![1]!;
     expect(css).not.toMatch(/\n/);
     expect(css).not.toMatch(/\s{2}/);
     expect(css).toContain('display:block');
@@ -84,7 +87,7 @@ describe('minified output', () => {
   });
 
   it('collapses the SVG', () => {
-    const svg = output.match(/export const chevrons\s*=\s*`([\s\S]*?)`/)[1];
+    const svg = output.match(/export const chevrons\s*=\s*`([\s\S]*?)`/)![1]!;
     expect(svg).not.toMatch(/\n/);
     expect(svg.startsWith('<svg')).toBe(true);
   });
@@ -124,11 +127,10 @@ describe('minified output', () => {
 describe('degradation is caught rather than silent', () => {
   it('notices a renamed tmpl export', () => {
     const renamed = templateSource.replace('export const tmpl', 'export const markup');
-    const out = transform(renamed);
-    expect(out).toContain('\n');
+    expect(transform(renamed)).toContain('\n');
   });
 
   it('notices a moved template module', () => {
-    expect(transform(templateSource, '/elsewhere/template.js')).toBeNull();
+    expect(transform(templateSource, '/elsewhere/template.ts')).toBeNull();
   });
 });

@@ -1,13 +1,18 @@
 [![version](https://badgen.net/static/version/1.1.0/orange)](https://badgen.net/static/version/1.1.0/orange)
 [![license](https://badgen.net/static/license/MIT/blue)](https://badgen.net/static/license/MIT/blue)
-[![size](https://badgen.net/static/source/10kb/red)](https://badgen.net/static/source/10kb/red)
+[![size](https://badgen.net/static/source/10kb/red)](https://badgen.net/static/source/10kb/green)
+[![gzip](https://badgen.net/static/gzip/3kb/green)](https://badgen.net/static/gzip/3kb/green)
+[![dependencies](https://badgen.net/static/vanilla/js/purple)](https://badgen.net/static/vanilla/js/purple)
+
 # &lt;before-after&gt;
 
 A custom element that wipes between two versions of the same thing — a photo before and after grading, a screen before and after a redesign, a function before and after a refactor. Drag the handle or focus it and use the arrow keys.
 
-## Install
+For example usage see the [live demo](https://ruthlessfish.github.io/before-after).
 
-Drop `before-after.es.js` next to your page and load it as a module. The element registers itself; there is nothing to initialise and nothing to import.
+## Installation
+
+Download `before-after.es.js` from the latest release and drop it next to your page and load it as a module. The element registers itself; there is nothing to initialize and nothing to import.
 
 ```html
 <script type="module" src="before-after.es.js"></script>
@@ -18,6 +23,19 @@ Drop `before-after.es.js` next to your page and load it as a module. The element
   before-label="Original"
   after-label="Graded"
   value="50"></before-after>
+```
+
+Written in TypeScript and published as ESM with type declarations, so bundler and
+editor tooling pick up `value`, `orientation`, `disabled` and `step` without any
+`@types` package:
+
+```ts
+import 'before-after';
+
+const el = document.createElement('before-after');
+el.value = 40;          // number | string
+el.value;               // -> number
+el.orientation;         // -> 'horizontal' | 'vertical'
 ```
 
 Both panes accept arbitrary markup instead, via the before and after slots. Whatever is in them gets clipped, so the two sides should share the same geometry — same box, same padding, same line height — or the wipe will not line up.

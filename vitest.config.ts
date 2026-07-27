@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitest/config';
 import { playwright } from '@vitest/browser-playwright';
 
-// Deliberately does not extend vite.config.js. That config's only plugin is the
+// Deliberately does not extend vite.config.ts. That config's only plugin is the
 // template minifier, which is `apply: 'build'` and so would never run here
 // anyway; the node project below exercises it directly instead.
 export default defineConfig({
@@ -10,7 +10,7 @@ export default defineConfig({
       {
         test: {
           name: 'browser',
-          include: ['test/browser/**/*.test.js'],
+          include: ['test/browser/**/*.test.ts'],
           browser: {
             enabled: true,
             provider: playwright(),
@@ -23,7 +23,7 @@ export default defineConfig({
         test: {
           name: 'node',
           environment: 'node',
-          include: ['test/node/**/*.test.js'],
+          include: ['test/node/**/*.test.ts'],
         },
       },
     ],

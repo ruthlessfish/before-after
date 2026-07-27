@@ -67,7 +67,7 @@ describe('dragging', () => {
     const el = mount();
     const { rail, handle } = parts(el);
     pointer(el, rail).down(at(el, 0.5));
-    expect(el.shadowRoot.activeElement).toBe(handle);
+    expect(parts(el).root.activeElement).toBe(handle);
   });
 
   it('suppresses the native drag of slotted images', () => {
@@ -124,7 +124,7 @@ describe('grab', () => {
 
   it('leaves clicks on slotted controls alone under the default', () => {
     const el = mount({ html: '<div slot="before"><button id="cta">Go</button></div>' });
-    const button = el.querySelector('#cta');
+    const button = el.querySelector<HTMLButtonElement>('#cta')!;
     let clicked = false;
     button.addEventListener('click', () => { clicked = true; });
     const event = new PointerEvent('pointerdown', {

@@ -177,7 +177,7 @@ describe('slotted content', () => {
       html: '<p slot="before" id="b">before</p><p slot="after" id="a">after</p>',
     });
     const { root } = parts(el);
-    const assigned = (name) => root.querySelector(`slot[name="${name}"]`)
+    const assigned = (name: string) => root.querySelector<HTMLSlotElement>(`slot[name="${name}"]`)!
       .assignedElements().map((n) => n.id);
         expect(assigned('before')).toEqual(['b']);
         expect(assigned('after')).toEqual(['a']);

@@ -140,7 +140,7 @@ describe('change', () => {
 describe('event plumbing', () => {
   it.each(['input', 'change'])('%s escapes the shadow root and bubbles', (type) => {
     const el = mount();
-    const seen = [];
+    const seen: Event[] = [];
     document.body.addEventListener(type, (e) => seen.push(e));
     press(el, 'ArrowRight');
     expect(seen).toHaveLength(1);

@@ -1,23 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { createRequire } from 'node:module';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { DEV_TAG, DIST_TAG, rewriteDevHtml } from '../../build/plugins';
+import { findPlugin } from './config';
 
-const require = createRequire(import.meta.url);
 const root = fileURLToPath(new URL('../..', import.meta.url));
-
-const config = require(path.join(root, 'vite.config.js'));
-const plugin = config.plugins.flat().find((p) => p?.name === 'dev-uses-source');
-
 const html = readFileSync(path.join(root, 'index.html'), 'utf8');
 
-// The hook may be authored bare or as { order, handler }; both are valid Vite.
-const hook = typeof plugin?.transformIndexHtml === 'function'
-  ? plugin.transformIndexHtml
-  : plugin?.transformIndexHtml?.handler;
-
-const transform = (input = html) => hook.call({}, input);
+const transform = (input = html) => rewriteDevHtml(input);
 
 /**
  * index.html is both the demo and the published GitHub Pages site, so the
@@ -26,19 +17,21 @@ const transform = (input = html) => hook.call({}, input);
  * kind of coupling as the template minifier, guarded the same way.
  */
 describe('the plugin is wired up', () => {
+  const plugin = findPlugin('dev-uses-source');
+
   it('is registered in the config', () => {
     expect(plugin).toBeTruthy();
-    expect(hook).toBeTypeOf('function');
+    expect(plugin?.transformIndexHtml).toBeTruthy();
   });
 
   it('only runs in the dev server, so a build is never rewritten', () => {
-    expect(plugin.apply).toBe('serve');
+    expect(plugin?.apply).toBe('serve');
   });
 });
 
 describe('the committed page still works on GitHub Pages', () => {
   it('loads the built file, which is what the site serves', () => {
-    expect(html).toContain('src="dist/before-after.es.js"');
+    expect(html).toContain(`src="${DIST_TAG}"`);
   });
 
   it('carries the id the source listing looks up', () => {
@@ -49,16 +42,16 @@ describe('the committed page still works on GitHub Pages', () => {
 describe('the dev server gets the source', () => {
   const output = transform();
 
-  it('points the module tag at lib/main.js', () => {
-    expect(output).toContain('src="/lib/main.js"');
+  it('points the module tag at the TypeScript entry', () => {
+    expect(output).toContain(`src="${DEV_TAG}"`);
   });
 
   it('leaves no reference to the built file behind', () => {
-    expect(output).not.toContain('dist/before-after.es.js');
+    expect(output).not.toContain(DIST_TAG);
   });
 
   it('changes nothing else about the page', () => {
-    expect(output.replace('/lib/main.js', 'dist/before-after.es.js')).toBe(html);
+    expect(output.replace(DEV_TAG, DIST_TAG)).toBe(html);
   });
 });
 

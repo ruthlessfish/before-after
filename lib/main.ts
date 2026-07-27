@@ -1,9 +1,23 @@
-import {tmpl, chevrons} from "./template";
+import { tmpl, chevrons } from './template';
 
 const TEMPLATE = document.createElement('template');
 TEMPLATE.innerHTML = tmpl;
 
-const clamp = (n) => Math.min(100, Math.max(0, n));
+const clamp = (n: number) => Math.min(100, Math.max(0, n));
+
+type Side = 'before' | 'after';
+type Orientation = 'horizontal' | 'vertical';
+
+// Attribute names are `<side>-<thing>`; the side is always the first segment.
+const sideOf = (name: string) => name.slice(0, name.indexOf('-')) as Side;
+
+// Throws rather than returning null: a missing node means the template and this
+// file have drifted apart, which is a build-time mistake, not a runtime state.
+const must = <T extends Element>(root: ParentNode, sel: string): T => {
+  const el = root.querySelector<T>(sel);
+  if (!el) throw new Error(`before-after: template is missing ${sel}`);
+  return el;
+};
 
 class BeforeAfter extends HTMLElement {
   static observedAttributes = [
@@ -11,11 +25,13 @@ class BeforeAfter extends HTMLElement {
     'before-src', 'after-src', 'before-alt', 'after-alt', 'before-label', 'after-label',
   ];
 
-  #frame;
-  #rail;
-  #handle;
-  #img = {};
-  #chip = {};
+  // Held rather than read off `this.shadowRoot`, which is nullable.
+  #root: ShadowRoot;
+  #frame: HTMLDivElement;
+  #rail: HTMLDivElement;
+  #handle: HTMLButtonElement;
+  #img: Record<Side, HTMLImageElement>;
+  #chip: Record<Side, HTMLSpanElement>;
   #value = 50;
   #dragging = false;
   #dirty = false;
@@ -24,14 +40,19 @@ class BeforeAfter extends HTMLElement {
     super();
     const root = this.attachShadow({ mode: 'open' });
     root.append(TEMPLATE.content.cloneNode(true));
-    this.#frame = root.querySelector('.frame');
-    this.#rail = root.querySelector('.rail');
-    this.#handle = root.querySelector('.handle');
+    this.#root = root;
+    this.#frame = must(root, '.frame');
+    this.#rail = must(root, '.rail');
+    this.#handle = must(root, '.handle');
     this.#handle.innerHTML = chevrons;
-    this.#img.before = root.querySelector('img.before');
-    this.#img.after = root.querySelector('img.after');
-    this.#chip.before = root.querySelector('.label.before');
-    this.#chip.after = root.querySelector('.label.after');
+    this.#img = {
+      before: must(root, 'img.before'),
+      after: must(root, 'img.after'),
+    };
+    this.#chip = {
+      before: must(root, '.label.before'),
+      after: must(root, '.label.after'),
+    };
   }
 
   connectedCallback() {
@@ -43,7 +64,7 @@ class BeforeAfter extends HTMLElement {
     this.#handle.addEventListener('keyup', this.#onKeyUp);
     this.#handle.addEventListener('blur', this.#onBlur);
     this.#handle.addEventListener('dragstart', this.#stop);
-    for (const slot of this.shadowRoot.querySelectorAll('slot')) {
+    for (const slot of this.#root.querySelectorAll('slot')) {
       slot.addEventListener('slotchange', this.#syncBox);
     }
     if (!this.hasAttribute('value')) this.#place(this.#value);
@@ -60,16 +81,16 @@ class BeforeAfter extends HTMLElement {
     this.#handle.removeEventListener('keyup', this.#onKeyUp);
     this.#handle.removeEventListener('blur', this.#onBlur);
     this.#handle.removeEventListener('dragstart', this.#stop);
-    for (const slot of this.shadowRoot.querySelectorAll('slot')) {
+    for (const slot of this.#root.querySelectorAll('slot')) {
       slot.removeEventListener('slotchange', this.#syncBox);
     }
   }
 
-  attributeChangedCallback(name, old, val) {
+  attributeChangedCallback(name: string, old: string | null, val: string | null) {
     if (old === val) return;
     switch (name) {
       case 'value':
-        this.#place(clamp(parseFloat(val)) || 0);
+        this.#place(clamp(parseFloat(val ?? '')) || 0);
         break;
       case 'before-src':
       case 'after-src':
@@ -78,14 +99,15 @@ class BeforeAfter extends HTMLElement {
         break;
       case 'before-alt':
       case 'after-alt':
-        this.#img[name.slice(0, name.indexOf('-'))].alt = val || '';
+        this.#img[sideOf(name)].alt = val || '';
         break;
       case 'before-label':
-      case 'after-label':
-        const chip = this.#chip[name.slice(0, name.indexOf('-'))];
+      case 'after-label': {
+        const chip = this.#chip[sideOf(name)];
         chip.textContent = val || '';
         chip.hidden = !val;
         break;
+      }
       case 'aspect':
         this.#syncBox();
         break;
@@ -94,27 +116,30 @@ class BeforeAfter extends HTMLElement {
     }
   }
 
-  get value() { return this.#value; }
-  set value(v) { this.#place(clamp(parseFloat(v)) || 0); }
+  // The getters are annotated so declaration emit reports what reading the
+  // property actually gives you, rather than widening to the setter's type.
+  get value(): number { return this.#value; }
+  set value(v: number | string) { this.#place(clamp(parseFloat(String(v))) || 0); }
 
-  get orientation() { return this.getAttribute('orientation') === 'vertical' ? 'vertical' : 'horizontal'; }
-  set orientation(v) { this.setAttribute('orientation', v === 'vertical' ? 'vertical' : 'horizontal'); }
+  get orientation(): Orientation { return this.getAttribute('orientation') === 'vertical' ? 'vertical' : 'horizontal'; }
+  // Setter stays wide: it normalises anything, which is behaviour the tests pin.
+  set orientation(v: string) { this.setAttribute('orientation', v === 'vertical' ? 'vertical' : 'horizontal'); }
 
   get disabled() { return this.hasAttribute('disabled'); }
-  set disabled(v) { this.toggleAttribute('disabled', Boolean(v)); }
+  set disabled(v: boolean) { this.toggleAttribute('disabled', Boolean(v)); }
 
-  get step() { return parseFloat(this.getAttribute('step')) || 1; }
+  get step() { return parseFloat(this.getAttribute('step') ?? '') || 1; }
 
   /* --- internals --- */
 
-  #place(next) {
+  #place(next: number) {
     this.#value = next;
     this.#frame.style.setProperty('--_p', next + '%');
-    this.#handle.setAttribute('aria-valuenow', Math.round(next));
+    this.#handle.setAttribute('aria-valuenow', String(Math.round(next)));
     this.#handle.setAttribute('aria-valuetext', Math.round(next) + '% revealed');
   }
 
-  #move(next) {
+  #move(next: number) {
     const before = this.#value;
     this.#place(clamp(next));
     if (this.#value === before) return;
@@ -129,7 +154,7 @@ class BeforeAfter extends HTMLElement {
     this.#send('change');
   }
 
-  #send(type) {
+  #send(type: 'input' | 'change') {
     this.dispatchEvent(new CustomEvent(type, {
       bubbles: true, composed: true, detail: { value: this.#value },
     }));
@@ -156,9 +181,8 @@ class BeforeAfter extends HTMLElement {
     }
   };
 
-  #setImageSrc(name, src) {
-    const side = name.slice(0, name.indexOf('-'));
-    const img = this.#img[side];
+  #setImageSrc(name: string, src: string | null) {
+    const img = this.#img[sideOf(name)];
     if (src) {
       img.src = src;
       img.hidden = false;
@@ -168,13 +192,14 @@ class BeforeAfter extends HTMLElement {
     }
   }
 
-  #firstImage() {
-    for (const side of ['before', 'after']) {
+  #firstImage(): HTMLImageElement | null {
+    for (const side of ['before', 'after'] as const) {
       if (!this.#img[side].hidden) return this.#img[side];
     }
-    for (const slot of this.shadowRoot.querySelectorAll('slot')) {
+    for (const slot of this.#root.querySelectorAll('slot')) {
       for (const el of slot.assignedElements()) {
-        if (el.tagName === 'IMG') return el;
+        // `el.tagName === 'IMG'` reads fine but does not narrow -- tagName is string.
+        if (el instanceof HTMLImageElement) return el;
         const nested = el.querySelector('img');
         if (nested) return nested;
       }
@@ -182,7 +207,7 @@ class BeforeAfter extends HTMLElement {
     return null;
   }
 
-  #fromPointer(e) {
+  #fromPointer(e: PointerEvent) {
     const box = this.#frame.getBoundingClientRect();
     if (box.width === 0 || box.height === 0) {
       return;
@@ -193,9 +218,9 @@ class BeforeAfter extends HTMLElement {
     this.#move(ratio * 100);
   }
 
-  #stop = (e) => e.preventDefault();
+  #stop = (e: Event) => e.preventDefault();
 
-  #onDown = (e) => {
+  #onDown = (e: PointerEvent) => {
     if (this.disabled) return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     const onRail = e.composedPath().includes(this.#rail);
@@ -209,11 +234,11 @@ class BeforeAfter extends HTMLElement {
     this.#fromPointer(e);
   };
 
-  #onMove = (e) => {
+  #onMove = (e: PointerEvent) => {
     if (this.#dragging) this.#fromPointer(e);
   };
 
-  #onUp = (e) => {
+  #onUp = (e: PointerEvent) => {
     if (!this.#dragging) return;
     this.#dragging = false;
     this.#frame.classList.remove('is-dragging');
@@ -223,11 +248,11 @@ class BeforeAfter extends HTMLElement {
 
   #onBlur = () => this.#handle.classList.remove('by-pointer');
 
-  #onKeyDown = (e) => {
+  #onKeyDown = (e: KeyboardEvent) => {
     if (this.disabled) return;
     this.#handle.classList.remove('by-pointer');
     const step = this.step;
-    let next = null;
+    let next: number | null = null;
     if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = this.#value - step;
     else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = this.#value + step;
     else if (e.key === 'PageUp') next = this.#value - step * 10;
@@ -239,10 +264,14 @@ class BeforeAfter extends HTMLElement {
     this.#move(next);
   };
 
-  #onKeyUp = (e) => {
+  #onKeyUp = (e: KeyboardEvent) => {
     if (e.key.indexOf('Arrow') === 0 || e.key === 'PageUp' || e.key === 'PageDown'
       || e.key === 'Home' || e.key === 'End') this.#commit();
   };
+}
+
+declare global {
+  interface HTMLElementTagNameMap { 'before-after': BeforeAfter }
 }
 
 customElements.define('before-after', BeforeAfter);

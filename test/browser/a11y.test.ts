@@ -24,7 +24,7 @@ describe('the handle', () => {
     const el = mount();
     const { handle } = parts(el);
     handle.focus();
-    expect(el.shadowRoot.activeElement).toBe(handle);
+    expect(parts(el).root.activeElement).toBe(handle);
   });
 });
 
@@ -100,14 +100,14 @@ describe('announced orientation', () => {
 
 describe('decoration', () => {
   it('hides the chevron icon from assistive technology', () => {
-    const svg = parts(mount()).handle.querySelector('svg');
+    const svg = parts(mount()).handle.querySelector('svg')!;
     expect(svg.getAttribute('aria-hidden')).toBe('true');
     expect(svg.getAttribute('focusable')).toBe('false');
   });
 });
 
 describe('reduced motion', () => {
-  const emulate = (value) => cdp().send('Emulation.setEmulatedMedia', {
+  const emulate = (value: string) => cdp().send('Emulation.setEmulatedMedia', {
     features: [{ name: 'prefers-reduced-motion', value }],
   });
 

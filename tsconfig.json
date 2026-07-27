@@ -1,10 +1,17 @@
 {
-    "compilerOptions": {
-        "outDir": "./dist",
-        "allowJs": true,
-        "target": "es5"
-    },
-        "include": [
-        "./src/**/*"
-    ]
+  "compilerOptions": {
+    // ES2022 for `#private` fields and class static blocks.
+    "target": "ES2022",
+    // DOM.Iterable is what makes `for (const slot of querySelectorAll(...))` type.
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["lib", "test", "build", "vite.config.ts", "vitest.config.ts"]
 }

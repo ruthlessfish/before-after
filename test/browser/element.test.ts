@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type BeforeAfterElement from '../../lib/main.js';
 import { cssPosition, mount, parts } from './helpers.js';
 
 describe('registration', () => {
@@ -8,7 +9,7 @@ describe('registration', () => {
 
   it('upgrades an element that was already in the document', async () => {
     document.body.insertAdjacentHTML('beforeend', '<before-after id="late"></before-after>');
-    const el = document.getElementById('late');
+    const el = document.getElementById('late') as BeforeAfterElement;
     await customElements.whenDefined('before-after');
     expect(el.shadowRoot).toBeTruthy();
     expect(el.value).toBe(50);
@@ -29,7 +30,7 @@ describe('shadow structure', () => {
   it('exposes the documented parts', () => {
     const { root } = parts(mount());
     const exposed = [...root.querySelectorAll('[part]')]
-      .flatMap((n) => n.getAttribute('part').split(/\s+/));
+      .flatMap((n) => n.getAttribute('part')!.split(/\s+/));
     for (const name of ['frame', 'pane', 'before', 'after', 'divider', 'handle', 'label']) {
       expect(exposed, `part="${name}"`).toContain(name);
     }
