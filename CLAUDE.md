@@ -29,7 +29,7 @@ First checkout needs `npx playwright install chromium`. There is no linter or fo
 Vitest, split into two projects by `vitest.config.mjs`:
 
 - **browser** (`test/browser/`) — the component, in real headless Chromium via Playwright. Not jsdom, deliberately: most of what this element does is `clip-path`, `getComputedStyle` aspect-ratio inference, pointer capture, `:focus-visible` and shadow DOM, all of which jsdom either stubs or lacks. Tests run against `lib/`, not `dist/`.
-- **node** (`test/node/`) — `build-plugin.test.js`, which requires `vite.config.js`, pulls out the `minify-template-module` plugin and calls its `transform` directly against the real `lib/template.js`. This is the guard for the silent-failure modes described below; if you change `template.js`'s shape, this is what tells you.
+- **node** (`test/node/`) — `build-plugin.test.js`, which requires `vite.config.js`, pulls out the `minify-template-module` plugin and calls its `transform` directly against the real `lib/template.js`. The plugin itself fails open, so this is the guard that makes the coupling described below loud; if you change `template.js`'s shape, this is what tells you.
 
 `vitest.config.mjs` does not extend `vite.config.js` (the minifier is `apply: 'build'` and would not run under Vitest anyway). It is `.mjs` because `package.json` sets `"type": "commonjs"`.
 
@@ -52,12 +52,14 @@ A single custom element, `<before-after>`, that clips one pane over another. Van
 
 `minifyTemplateModule()` in `vite.config.js` regex-matches the *source text* of `lib/template.js` at build time and rewrites the bodies of the `chevrons` and `tmpl` template literals — SVG, CSS, and HTML each get their own minifier, with `tmpl` split on its `<style>` block.
 
-This means the plugin is coupled to the exact shape of `lib/template.js`:
+This couples the plugin to the exact shape of `lib/template.js`. On its own it fails *open* — every mismatch below degrades or skips minification without a build error. `test/node/build-plugin.test.js` is what makes that coupling loud: it asserts each expectation directly against the real source, so changing `template.js`'s shape fails a test instead of quietly growing `dist/`.
 
-- The exports must stay as `export const chevrons = \`...\`` and `export const tmpl = \`...\`` — renaming them, changing to `let`, or splitting the literal silently skips minification.
+- The exports must stay as `export const chevrons = \`...\`` and `export const tmpl = \`...\`` — renaming them, changing to `let`, or splitting the literal skips minification.
 - The literals must contain no `${}` interpolation and no backticks.
 - `tmpl` must keep its single leading `<style>...</style>` block, or the whole thing falls through to HTML-only minification and the CSS goes unminified.
-- The `transform` hook matches on the path ending in `lib/template.js`. Moving or renaming that file breaks the plugin without any error.
+- The `transform` hook matches on the path ending in `lib/template.js`. Moving or renaming that file breaks the plugin.
+
+Failing open is the right default here, unlike in `dev-uses-source` below: this plugin runs on every build, and the whole stake is ~200 gzipped bytes (1,622 → 1,417 on a 3.1 kB bundle). A hard throw would turn a cosmetic size regression into a broken build. That size delta is also the budget for any future hardening — don't spend an AST rewrite on it.
 
 ### The dev source-swap plugin
 
