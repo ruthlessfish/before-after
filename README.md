@@ -1,4 +1,7 @@
-# <before-after>
+[![version](https://badgen.net/static/version/1.1.0/orange)](https://badgen.net/static/version/1.1.0/orange)
+[![license](https://badgen.net/static/license/MIT/blue)](https://badgen.net/static/license/MIT/blue)
+[![size](https://badgen.net/static/source/10kb/red)](https://badgen.net/static/source/10kb/red)
+# &lt;before-after&gt;
 
 A custom element that wipes between two versions of the same thing — a photo before and after grading, a screen before and after a redesign, a function before and after a refactor. Drag the handle or focus it and use the arrow keys.
 
