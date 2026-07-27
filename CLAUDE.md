@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-npm run build     # Vite library build -> dist/before-after.{es,umd}.js
+npm run build     # Vite library build -> dist/before-after.es.js (ESM only)
 npm run dev       # Vite dev server for index.html (the demo page)
 npm run preview   # Serve the built output
 

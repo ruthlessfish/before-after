@@ -12,11 +12,9 @@
   ],
   "browser": "./dist/before-after.es.js",
   "exports": {
-    ".": {
-      "import": "./dist/before-after.es.js",
-      "require": "./dist/before-after.umd.js"
-    }
+    ".": "./dist/before-after.es.js"
   },
+  "module": "./dist/before-after.es.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
