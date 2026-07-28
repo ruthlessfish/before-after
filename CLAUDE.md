@@ -25,7 +25,9 @@ First checkout needs `npx playwright install chromium`. There is no linter or fo
 
 `npm run dev` serves `lib/` — edit and reload, no build step. The committed `index.html` points at `dist/before-after.es.js`; the `dev-uses-source` plugin swaps that for `/lib/main.ts` in the dev server's response only.
 
-`dist/` is committed intentionally — `homepage` is a GitHub Pages site served from the repo, and the published page loads the built file. Rebuild and commit `dist/` — bundle and `dist/types/` both — alongside source changes, even though you no longer need to for local work.
+`dist/` is **not** committed. `.github/workflows/deploy.yml` builds on every push to `main` and publishes `index.html` + `demo.css` + a fresh `dist/` to Pages as an artifact, so `homepage` can no longer serve a stale bundle. `prepack` rebuilds it for `npm publish`. Nothing about source changes requires a build step locally — `npm run dev` serves `lib/`.
+
+That the site is an artifact rather than the branch is what lets `index.html` keep its `src="dist/before-after.es.js"`: the workflow stages the files in the repo's own layout. Adding a demo asset means adding it to the `Stage the site` step, or Pages will 404 on it.
 
 ## Tests
 

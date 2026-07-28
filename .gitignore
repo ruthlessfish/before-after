@@ -148,3 +148,7 @@ out
 vitest.config.*.timestamp*
 test/**/__screenshots__/
 .vitest-attachments/
+
+# Build output. Pages deploys it from CI (.github/workflows/deploy.yml) and
+# `prepack` rebuilds it for npm, so it no longer needs to be committed.
+dist/

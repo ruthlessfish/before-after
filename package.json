@@ -23,6 +23,7 @@
     "dev": "vite",
     "typecheck": "tsc --noEmit",
     "build": "vite build && tsc -p tsconfig.build.json",
+    "prepack": "npm run build",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
