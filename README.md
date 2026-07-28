@@ -54,7 +54,7 @@ Both panes accept arbitrary markup instead, via the before and after slots. What
 |----------------------------|------------------------|-----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | value                      | 0–100                  | 50                          | Divider position as a percentage. Sets the starting position and moves the divider whenever it changes; it is not written back during a drag — read the value property for that. |
 | orientation                | horizontal \| vertical | horizontal                  | Axis the divider travels along. Vertical puts the before pane on top.                                                                                                            |
-| before-src / after-src     | url                    | —                           | Shorthand for a plain image pane. Ignored for a side that has slotted content.                                                                                                   |
+| before-src / after-src     | url                    | —                           | Shorthand for a plain image pane. The image and any slotted content for that side share the pane and stack, so use one or the other per side.                                    |
 | before-alt / after-alt     | string                 | ""                          | Alt text for those images. Empty alt marks the image decorative.                                                                                                                 |
 | before-label / after-label | string                 | —                           | Caption chips pinned to the top corners. Each one sits inside its own pane, so it wipes away with it.                                                                            |
 | label                      | string                 | Before and after comparison | Accessible name for the slider.                                                                                                                                                  |
@@ -70,6 +70,7 @@ Both panes accept arbitrary markup instead, via the before and after slots. What
 | value       | get / set | Live position as a number. Setting it moves the divider without firing an event.                                                               |
 | orientation | get / set | Reflects the attribute.                                                                                                                        |
 | disabled    | get / set | Reflects the attribute.                                                                                                                        |
+| step        | get / set | Reflects the attribute. Falls back to 1 for anything that is not a usable number.                                                              |
 | input       | event     | Fires on every movement, including each arrow key press. event.detail.value carries the position.                                              |
 | change      | event     | Fires once the gesture ends — pointer released, or key released — and only if the divider actually moved. Use this one for anything expensive. |
 
@@ -83,12 +84,14 @@ Both panes accept arbitrary markup instead, via the before and after slots. What
 | --ba-handle-bg     | #fff             | Handle fill             |
 | --ba-handle-color  | #111             | Chevron colour          |
 | --ba-radius        | 0                | Frame corner radius     |
+| --ba-background    | transparent      | Frame fill behind the panes |
 | --ba-object-fit    | cover            | Fit of slotted media    |
 | --ba-label-bg      | rgb(0 0 0 / .55) | Caption chip background |
 | --ba-label-color   | #fff             | Caption chip text       |
+| --ba-label-font    | ui-monospace, …  | Caption chip typeface   |
 | --ba-focus-ring    | #0aa             | Focus outline colour    |
 
-For anything the custom properties do not reach, the shadow parts are exposed: frame, pane, before, after, divider, handle and label.
+For anything the custom properties do not reach, the shadow parts are exposed: frame, pane, before, after, divider, handle, label and image.
 
 ## Behavior
 

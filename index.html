@@ -189,7 +189,7 @@
                 <td><span class="name">before-src</span> / <span class="name">after-src</span></td>
                 <td><span class="type">url</span></td>
                 <td><span class="def">&mdash;</span></td>
-                <td>Shorthand for a plain image pane. Ignored for a side that has slotted content.</td>
+                <td>Shorthand for a plain image pane. The image and any slotted content for that side share the pane and stack, so use one or the other per side.</td>
               </tr>
               <tr>
                 <td><span class="name">before-alt</span> / <span class="name">after-alt</span></td>
@@ -245,6 +245,7 @@
               <tr><td><span class="name">value</span></td><td><span class="type">get / set</span></td><td>Live position as a number. Setting it moves the divider without firing an event.</td></tr>
               <tr><td><span class="name">orientation</span></td><td><span class="type">get / set</span></td><td>Reflects the attribute.</td></tr>
               <tr><td><span class="name">disabled</span></td><td><span class="type">get / set</span></td><td>Reflects the attribute.</td></tr>
+              <tr><td><span class="name">step</span></td><td><span class="type">get / set</span></td><td>Reflects the attribute. Falls back to 1 for anything that is not a usable number.</td></tr>
               <tr><td><span class="name">input</span></td><td><span class="type">event</span></td><td>Fires on every movement, including each arrow key press. <code>event.detail.value</code> carries the position.</td></tr>
               <tr><td><span class="name">change</span></td><td><span class="type">event</span></td><td>Fires once the gesture ends &mdash; pointer released, or key released &mdash; and only if the divider actually moved. Use this one for anything expensive.</td></tr>
             </tbody>
@@ -262,9 +263,11 @@
               <tr><td><span class="name">--ba-handle-bg</span></td><td><span class="def">#fff</span></td><td>Handle fill</td></tr>
               <tr><td><span class="name">--ba-handle-color</span></td><td><span class="def">#111</span></td><td>Chevron colour</td></tr>
               <tr><td><span class="name">--ba-radius</span></td><td><span class="def">0</span></td><td>Frame corner radius</td></tr>
+              <tr><td><span class="name">--ba-background</span></td><td><span class="def">transparent</span></td><td>Frame fill behind the panes</td></tr>
               <tr><td><span class="name">--ba-object-fit</span></td><td><span class="def">cover</span></td><td>Fit of slotted media</td></tr>
               <tr><td><span class="name">--ba-label-bg</span></td><td><span class="def">rgb(0 0 0 / .55)</span></td><td>Caption chip background</td></tr>
               <tr><td><span class="name">--ba-label-color</span></td><td><span class="def">#fff</span></td><td>Caption chip text</td></tr>
+              <tr><td><span class="name">--ba-label-font</span></td><td><span class="def">ui-monospace, …</span></td><td>Caption chip typeface</td></tr>
               <tr><td><span class="name">--ba-focus-ring</span></td><td><span class="def">#0aa</span></td><td>Focus outline colour</td></tr>
             </tbody>
           </table>
@@ -272,7 +275,7 @@
         <p>
           For anything the custom properties do not reach, the shadow parts are exposed:
           <code>frame</code>, <code>pane</code>, <code>before</code>, <code>after</code>,
-          <code>divider</code>, <code>handle</code> and <code>label</code>.
+          <code>divider</code>, <code>handle</code>, <code>label</code> and <code>image</code>.
         </p>
       </div>
     </section>

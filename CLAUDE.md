@@ -92,6 +92,10 @@ Pointer events are bound on `.frame` (with pointer capture, so drags survive lea
 
 `grab="handle"` (the default) requires the pointerdown path to include `.rail`, which is what keeps clicks on slotted links and buttons working. `grab="anywhere"` drops that check.
 
+`#endDrag()` is teardown only and never emits, so it can be called from anywhere a gesture ends — including `disconnectedCallback`, which has to run it because a drag interrupted by removal never gets its `pointerup`: the listener is already unbound by then. Left set, `#dragging` would make the first `pointermove` after a reconnect drag with no press behind it. Anything that ends a drag goes in `#endDrag()`; anything that emits stays in `#onUp`.
+
+`touch-action` is split across two rules: `pan-y` on `:host`, `pan-x` on `:host([orientation="vertical"])`. The browser must keep the axis the divider does *not* travel along, or a touch drag is taken for a scroll and the pointer stream is cancelled. This only matters under `grab="anywhere"`, since `.rail` sets `touch-action: none` itself. Note that the browser tests cannot catch a regression here by dragging — synthetic `PointerEvent`s ignore `touch-action` — so it is pinned with `getComputedStyle` in `element.test.ts` instead. For the same reason, pointer *capture* is untestable in this suite: `setPointerCapture` rejects a synthetic pointer id, and `#onDown` swallows the throw.
+
 Two events, deliberately distinct: `input` fires from `#move()` on every position change; `change` fires from `#commit()` only at the end of a gesture and only if `#dirty` was set. A gesture that never moved the divider emits nothing.
 
 The `.by-pointer` class on the handle suppresses the focus ring for focus that a drag took rather than the user requesting it; it is cleared on blur and on any keydown.
@@ -100,7 +104,7 @@ The `.by-pointer` class on the handle suppresses the focus ring for focus that a
 
 Private class fields (`#frame`, `#move()`, …) throughout. Handlers that need a stable identity for `removeEventListener` are arrow-function fields (`#onDown = (e) => …`); plain methods are used only for internal calls. `connectedCallback`/`disconnectedCallback` mirror each other exactly — adding a listener to one means removing it in the other.
 
-Any new attribute must be added to `static observedAttributes` and given a case in `attributeChangedCallback`; the `default` branch falls through to `#syncA11y()`.
+An attribute that changes rendered or announced state must be added to `static observedAttributes` and given a case in `attributeChangedCallback`; the `default` branch falls through to `#syncA11y()`. An attribute read at the moment it is used — `step` in `#onKeyDown`, `grab` in `#onDown` — deliberately stays out of both, since observing it would only schedule a `#syncA11y()` that changes nothing.
 
 Comments in this codebase are sparse and explain *why* a non-obvious choice was made, not what the line does. Match that.
 
