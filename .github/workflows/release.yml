@@ -20,15 +20,20 @@ jobs:
 
       - run: npm ci
 
+      # Tags are v-prefixed; package.json and npm pack's filename are not.
+      # Strip it once here — VERSION is the bare number everywhere below.
+      #
       # A tag that disagrees with package.json ships a tarball whose version
       # is not the one anyone tagged. Fail before anything is published.
       - name: Check the tag matches package.json
         run: |
+          version="${GITHUB_REF_NAME#v}"
           pkg=$(node -p "require('./package.json').version")
-          if [ "$pkg" != "${GITHUB_REF_NAME}" ]; then
+          if [ "$pkg" != "$version" ]; then
             echo "tag ${GITHUB_REF_NAME} != package.json ${pkg}" >&2
             exit 1
           fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
 
       - run: npx playwright install --with-deps chromium
 
@@ -51,4 +56,4 @@ jobs:
             dist/before-after.es.js \
             dist/types/main.d.ts \
             dist/types/template.d.ts \
-            "before-after-${GITHUB_REF_NAME}.tgz"
+            "before-after-${VERSION}.tgz"
