@@ -13,6 +13,7 @@ declare class BeforeAfter extends HTMLElement {
     get disabled(): boolean;
     set disabled(v: boolean);
     get step(): number;
+    set step(v: number | string);
 }
 declare global {
     interface HTMLElementTagNameMap {
