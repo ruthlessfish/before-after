@@ -9,9 +9,29 @@
   <a href="#">Fork me on GitHub</a>
 </div>
 
+<nav class="toc" id="toc" aria-labelledby="toc-title">
+  <p class="toc-title" id="toc-title">On this page</p>
+  <ul>
+    <li><a href="#top"><span class="toc-label">Overview</span></a></li>
+    <li><a href="#install"><span class="toc-label">Install</span></a></li>
+    <li><a href="#examples"><span class="toc-label">Examples</span></a></li>
+    <li class="sub"><a href="#ex-slots"><span class="toc-label">Two code paths</span></a></li>
+    <li class="sub"><a href="#ex-vertical"><span class="toc-label">Wiping down</span></a></li>
+    <li class="sub"><a href="#ex-grab"><span class="toc-label">Grab anywhere</span></a></li>
+    <li><a href="#api"><span class="toc-label">API</span></a></li>
+    <li class="sub"><a href="#api-attributes"><span class="toc-label">Attributes</span></a></li>
+    <li class="sub"><a href="#api-members"><span class="toc-label">Properties &amp; events</span></a></li>
+    <li class="sub"><a href="#api-styling"><span class="toc-label">Styling</span></a></li>
+    <li><a href="#behaviour"><span class="toc-label">Behaviour</span></a></li>
+    <li class="sub"><a href="#keyboard"><span class="toc-label">Keyboard</span></a></li>
+    <li class="sub"><a href="#worth-knowing"><span class="toc-label">Worth knowing</span></a></li>
+    <li><a href="#source"><span class="toc-label">Source</span></a></li>
+  </ul>
+</nav>
+
 <div class="page">
 
-  <header class="masthead">
+  <header class="masthead" id="top">
     <div class="eyebrow">
       <span><b>component</b> &nbsp;v1.0.0</span>
       <span>typescript</span>
@@ -48,7 +68,7 @@
 
   <main>
 
-    <section class="sec">
+    <section class="sec" id="install">
       <div class="sec-label">Install<em>one file</em></div>
       <div class="sec-body">
         <p>
@@ -75,10 +95,10 @@
       </div>
     </section>
 
-    <section class="sec">
+    <section class="sec" id="examples">
       <div class="sec-label">Examples<em>slots, axis</em></div>
       <div class="sec-body">
-        <h2>Two code paths, same shape</h2>
+        <h2 id="ex-slots">Two code paths, same shape</h2>
         <p>
           Slotted HTML, no images. The panes here are two <code>&lt;pre&gt;</code> blocks padded to the
           same line count, so the divider reads as a single edit rather than two documents.
@@ -113,7 +133,7 @@
         </div>
         <div class="plate-cap"><span>Fig. 2 &nbsp;&middot;&nbsp; slotted markup, horizontal axis</span></div>
 
-        <h2 style="margin-top:1.5rem">Wiping down instead of across</h2>
+        <h2 id="ex-vertical" style="margin-top:1.5rem">Wiping down instead of across</h2>
         <p>
           <code>orientation="vertical"</code> moves the divider top to bottom; the before pane is the
           top one. Everything else &mdash; keys, events, parts &mdash; behaves identically.
@@ -128,13 +148,11 @@
             <div class="plate-cap"><span>Fig. 3 &nbsp;&middot;&nbsp; vertical axis</span></div>
           </div>
         </div>
-      </div>
 
-      <h2><Grab anywhere</h2>
-      <p><code>grab="anywhere"</code> allows the user to drag the divider from anywhere within the component, not just the handle.</p>
-      <div class="demo-grid">
-        <div>
-          <div class="plate">
+        <h2 id="ex-grab" style="margin-top:1.5rem">Grab anywhere</h2>
+        <p><code>grab="anywhere"</code> allows the user to drag the divider from anywhere within the component, not just the handle.</p>
+        <div class="demo-grid">
+          <div>
             <div class="plate">
               <before-after id="themed" value="55" grab="anywhere"
                 label="Restyled comparison slider"
@@ -146,10 +164,10 @@
       </div>
     </section>
 
-    <section class="sec">
+    <section class="sec" id="api">
       <div class="sec-label">API<em>attributes</em></div>
       <div class="sec-body">
-        <div class="table-wrap">
+        <div class="table-wrap" id="api-attributes">
           <table>
             <thead>
               <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Notes</th></tr>
@@ -219,7 +237,7 @@
           </table>
         </div>
 
-        <h3>Properties and events</h3>
+        <h3 id="api-members">Properties and events</h3>
         <div class="table-wrap">
           <table>
             <thead><tr><th>Member</th><th>Kind</th><th>Notes</th></tr></thead>
@@ -233,7 +251,7 @@
           </table>
         </div>
 
-        <h3>Styling</h3>
+        <h3 id="api-styling">Styling</h3>
         <div class="table-wrap">
           <table>
             <thead><tr><th>Custom property</th><th>Default</th><th>Affects</th></tr></thead>
@@ -259,10 +277,10 @@
       </div>
     </section>
 
-    <section class="sec">
+    <section class="sec" id="behaviour">
       <div class="sec-label">Behaviour<em>keys, edges</em></div>
       <div class="sec-body">
-        <h3>Keyboard</h3>
+        <h3 id="keyboard">Keyboard</h3>
         <div class="table-wrap">
           <table>
             <thead><tr><th>Key</th><th>Result</th></tr></thead>
@@ -274,7 +292,7 @@
             </tbody>
           </table>
         </div>
-        <h3>Worth knowing</h3>
+        <h3 id="worth-knowing">Worth knowing</h3>
         <ul class="notes">
           <li>The handle is a real <code>&lt;button&gt;</code> carrying <code>role="slider"</code>, so it is tabbable, announces its position, and works inside a form without submitting it.</li>
           <li>Panes are stacked in one grid cell, so the frame is as tall as the taller side and nothing is cropped by surprise.</li>
@@ -286,7 +304,7 @@
       </div>
     </section>
 
-    <section class="sec">
+    <section class="sec" id="source">
       <div class="sec-label">Source<em>before-after.es.js</em></div>
       <div class="sec-body">
         <p>
@@ -311,6 +329,44 @@
 </div>
 
 <script type="module" id="ba-source" src="dist/before-after.es.js"></script>
+
+<script type="module">
+  /* ---------- on-this-page: mark the entry the reader is inside ---------- */
+
+  const items = [...document.querySelectorAll('.toc a')]
+    .map((a) => ({ a, el: document.getElementById(decodeURIComponent(a.hash.slice(1))) }))
+    .filter((it) => it.el);
+
+  // A scroll line rather than IntersectionObserver: sections here are taller
+  // than the viewport, so "is visible" would leave several matching at once.
+  const spy = () => {
+    const line = innerHeight * 0.3;
+    const atEnd = innerHeight + scrollY >= document.documentElement.scrollHeight - 2;
+    let current = atEnd ? items.at(-1) : items[0];
+
+    if (!atEnd) {
+      for (const it of items) {
+        if (it.el.getBoundingClientRect().top <= line) current = it;
+      }
+    }
+
+    for (const it of items) {
+      if (it === current) it.a.setAttribute('aria-current', 'location');
+      else it.a.removeAttribute('aria-current');
+    }
+  };
+
+  let queued = false;
+  const schedule = () => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => { queued = false; spy(); });
+  };
+
+  addEventListener('scroll', schedule, { passive: true });
+  addEventListener('resize', schedule);
+  spy();
+</script>
 
 <script type="module">
   /* ---------- demo artwork: two SVG data URIs per pair ---------- */

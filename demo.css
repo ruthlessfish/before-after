@@ -83,7 +83,9 @@
     --tok-num: #9fd7e4;
   }
 
-  html { -webkit-text-size-adjust: 100%; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+
+  [id] { scroll-margin-top: 2rem; }
 
   body {
     margin: 0;
@@ -221,6 +223,113 @@
   @media (max-width: 820px) {
     .sec { grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }
     .sec-label { position: static; }
+  }
+
+  /* ---- on-this-page rail -------------------------------------------- */
+
+  /* Parked outside the 1140px measure when the viewport can afford it; below
+     that it collapses to bare ticks and only opens over the text on demand. */
+
+  .toc {
+    position: fixed;
+    z-index: 5;
+    top: 50%;
+    right: 1rem;
+    transform: translateY(-50%);
+    max-height: 84vh;
+    overflow: auto;
+    overscroll-behavior: contain;
+    padding: .8rem .9rem;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: 11px;
+    line-height: 1.5;
+    transition: background-color .18s, border-color .18s, box-shadow .18s;
+  }
+
+  .toc-title {
+    margin: 0 0 .7rem;
+    font-size: 10px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .toc ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: .3rem;
+  }
+
+  .toc a {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    text-decoration: none;
+    color: var(--muted);
+    letter-spacing: .04em;
+    transition: color .15s;
+  }
+
+  /* The tick doubles as the whole affordance once the labels are collapsed. */
+  .toc a::before {
+    content: "";
+    flex: none;
+    width: .85rem;
+    height: 1px;
+    background: currentColor;
+    opacity: .6;
+    transition: width .18s, background-color .15s, opacity .15s;
+  }
+
+  .toc li.sub a { font-size: 10.5px; }
+  .toc li.sub a::before { width: .45rem; margin-left: .4rem; }
+
+  .toc a:hover { color: var(--ink); }
+  .toc a:hover::before { opacity: 1; }
+
+  .toc a[aria-current] { color: var(--accent); }
+  .toc a[aria-current]::before { width: 1.6rem; background: var(--accent); opacity: 1; }
+  .toc li.sub a[aria-current]::before { width: 1.2rem; }
+
+  .toc-label { white-space: nowrap; }
+
+  @media (min-width: 1500px) {
+    .toc { right: calc(50vw - 570px - 13rem); }
+  }
+
+  /* Not enough gutter to sit beside the text: ticks only until asked. */
+  @media (max-width: 1499px) {
+    .toc-title,
+    .toc-label {
+      max-width: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: max-width .2s, opacity .2s;
+    }
+
+    .toc:hover,
+    .toc:focus-within {
+      background: var(--surface);
+      border-color: var(--rule);
+      box-shadow: var(--shadow);
+    }
+
+    .toc:hover .toc-title,
+    .toc:hover .toc-label,
+    .toc:focus-within .toc-title,
+    .toc:focus-within .toc-label {
+      max-width: 12rem;
+      opacity: 1;
+    }
+  }
+
+  @media (max-width: 1023px) {
+    .toc { display: none; }
   }
 
   /* ---- plate (demo frame with registration ticks) ------------------- */
@@ -458,6 +567,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    html { scroll-behavior: auto; }
   }
 
   .ribbon {
