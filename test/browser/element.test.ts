@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type BeforeAfterElement from '../../lib/main.js';
-import { cssPosition, mount, parts } from './helpers.js';
+import { cssPosition, mount, parts, track } from './helpers.js';
 
 describe('registration', () => {
   it('defines itself on import, with no setup call', () => {
@@ -9,11 +9,10 @@ describe('registration', () => {
 
   it('upgrades an element that was already in the document', async () => {
     document.body.insertAdjacentHTML('beforeend', '<before-after id="late"></before-after>');
-    const el = document.getElementById('late') as BeforeAfterElement;
+    const el = track(document.getElementById('late') as BeforeAfterElement);
     await customElements.whenDefined('before-after');
     expect(el.shadowRoot).toBeTruthy();
     expect(el.value).toBe(50);
-    el.remove();
   });
 
   it('exports the class as the default export', async () => {
@@ -31,7 +30,7 @@ describe('shadow structure', () => {
     const { root } = parts(mount());
     const exposed = [...root.querySelectorAll('[part]')]
       .flatMap((n) => n.getAttribute('part')!.split(/\s+/));
-    for (const name of ['frame', 'pane', 'before', 'after', 'divider', 'handle', 'label']) {
+    for (const name of ['frame', 'pane', 'before', 'after', 'divider', 'handle', 'label', 'image']) {
       expect(exposed, `part="${name}"`).toContain(name);
     }
   });
@@ -114,6 +113,17 @@ describe('value', () => {
     el.value = 70;
     expect(el.getAttribute('value')).toBe('30');
   });
+
+  it.each([
+    ['above the range', '140', 100],
+    ['below the range', '-40', 0],
+    ['non-numeric', 'nope', 0],
+  ])('clamps an attribute set %s', (_label, input, expected) => {
+    const el = mount();
+    el.setAttribute('value', input);
+    expect(el.value).toBe(expected);
+    expect(cssPosition(el)).toBe(expected);
+  });
 });
 
 describe('orientation', () => {
@@ -181,6 +191,27 @@ describe('step', () => {
   it('falls back to 1 for a value that is not a usable number', () => {
     expect(mount({ step: 'lots' }).step).toBe(1);
     expect(mount({ step: 0 }).step).toBe(1);
+  });
+
+  it('reflects the property to the attribute, like the other members', () => {
+    const el = mount();
+    el.step = 5;
+    expect(el.getAttribute('step')).toBe('5');
+    expect(el.step).toBe(5);
+  });
+});
+
+describe('touch scrolling', () => {
+  // The axis the browser is still allowed to pan has to be the one the divider
+  // does not travel along, or a touch drag gets taken for a scroll and the
+  // pointer stream is cancelled mid-gesture. Synthetic PointerEvents ignore
+  // touch-action entirely, so this is the only way to pin it.
+  it('leaves the page scrollable across the divider axis', () => {
+    expect(getComputedStyle(mount()).touchAction).toBe('pan-y');
+  });
+
+  it('swaps the axis when the divider travels vertically', () => {
+    expect(getComputedStyle(mount({ orientation: 'vertical' })).touchAction).toBe('pan-x');
   });
 });
 

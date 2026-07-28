@@ -51,7 +51,9 @@ describe('the dev server gets the source', () => {
   });
 
   it('changes nothing else about the page', () => {
-    expect(output.replace(DEV_TAG, DIST_TAG)).toBe(html);
+    // replaceAll, to mirror the plugin -- `replace` would pass only for as long
+    // as index.html happens to reference the bundle exactly once.
+    expect(output.replaceAll(DEV_TAG, DIST_TAG)).toBe(html);
   });
 });
 

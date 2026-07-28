@@ -178,6 +178,65 @@ describe('press filtering', () => {
   });
 });
 
+describe('a gesture interrupted by disconnection', () => {
+  it('does not leave a drag running to be resumed on reconnect', () => {
+    const el = mount();
+    const drag = pointer(el, parts(el).rail);
+    drag.down(at(el, 0.5));
+    el.remove();
+    document.body.append(el);
+    drag.move(at(el, 0.9));
+    expect(el.value).toBeCloseTo(50, 5);
+  });
+
+  it('clears the dragging class, which would otherwise suspend the transition forever', () => {
+    const el = mount();
+    const drag = pointer(el, parts(el).rail);
+    drag.down(at(el, 0.5));
+    el.remove();
+    expect(parts(el).frame.classList.contains('is-dragging')).toBe(false);
+  });
+
+  it('leaves no pending change for the next gesture to emit', () => {
+    const el = mount();
+    const first = pointer(el, parts(el).rail);
+    first.down(at(el, 0.5));
+    first.move(at(el, 0.8));
+    el.remove();
+    document.body.append(el);
+
+    const events = listen(el);
+    const second = pointer(el, parts(el).rail);
+    second.down(at(el, 0.8));
+    second.up();
+    expect(events.of('change')).toHaveLength(0);
+  });
+});
+
+describe('disabled part-way through a drag', () => {
+  it('freezes the divider where it stood', () => {
+    const el = mount();
+    const drag = pointer(el, parts(el).rail);
+    drag.down(at(el, 0.5));
+    drag.move(at(el, 0.6));
+    el.disabled = true;
+    drag.move(at(el, 0.9));
+    expect(el.value).toBeCloseTo(60, 5);
+  });
+
+  it('still reports the movement that happened while it was live', () => {
+    const el = mount();
+    const events = listen(el);
+    const drag = pointer(el, parts(el).rail);
+    drag.down(at(el, 0.5));
+    drag.move(at(el, 0.6));
+    el.disabled = true;
+    drag.up();
+    expect(events.of('change')).toHaveLength(1);
+    expect(events.of('change')[0].value).toBeCloseTo(60, 5);
+  });
+});
+
 describe('a frame with no area', () => {
   it('is left alone rather than being driven to a nonsense position', () => {
     const el = mount({ size: null });

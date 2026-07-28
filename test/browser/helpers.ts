@@ -8,6 +8,16 @@ afterEach(() => {
   mounted.clear();
 });
 
+/**
+ * Register an element for teardown. `mount()` does this itself; a test that has
+ * to build its element some other way (parsing markup, say) calls this so a
+ * failed assertion cannot leak the element into the next test.
+ */
+export function track<T extends Element>(el: T): T {
+  mounted.add(el);
+  return el;
+}
+
 /** Like the component's own lookup: a missing node is a broken template, not a state. */
 function q<T extends Element>(root: ParentNode, sel: string): T {
   const el = root.querySelector<T>(sel);

@@ -141,14 +141,14 @@ describe('aspect ratio', () => {
   });
 
   it('is inferred from a slotted image', async () => {
-    const el = mount({ size: null, html: `<img alt=""  slot="before" src="${imageUrl(200, 50)}">` });
+    const el = mount({ size: null, html: `<img alt="" slot="before" src="${imageUrl(200, 50)}">` });
     await vi.waitFor(() => {
       expect(getComputedStyle(el).aspectRatio).toBe('200 / 50');
     });
   });
 
   it('is inferred from an image nested inside slotted markup', async () => {
-    const el = mount({ size: null, html: `<div slot="after"><img alt=""  src="${imageUrl(120, 60)}"></div>` });
+    const el = mount({ size: null, html: `<div slot="after"><img alt="" src="${imageUrl(120, 60)}"></div>` });
     await vi.waitFor(() => {
       expect(getComputedStyle(el).aspectRatio).toBe('120 / 60');
     });
@@ -158,6 +158,17 @@ describe('aspect ratio', () => {
     const el = mount({ 'before-src': imageUrl(300, 100), aspect: '2 / 1', size: null });
     await vi.waitFor(() => {
       expect(getComputedStyle(el).aspectRatio).toBe('2 / 1');
+    });
+  });
+
+  it('measures a shorthand image ahead of a slotted one', async () => {
+    const el = mount({
+      'before-src': imageUrl(300, 100),
+      size: null,
+      html: `<img alt="" slot="after" src="${imageUrl(50, 500)}">`,
+    });
+    await vi.waitFor(() => {
+      expect(getComputedStyle(el).aspectRatio).toBe('300 / 100');
     });
   });
 
@@ -179,9 +190,9 @@ describe('slotted content', () => {
     const { root } = parts(el);
     const assigned = (name: string) => root.querySelector<HTMLSlotElement>(`slot[name="${name}"]`)!
       .assignedElements().map((n) => n.id);
-        expect(assigned('before')).toEqual(['b']);
-        expect(assigned('after')).toEqual(['a']);
-      });
+    expect(assigned('before')).toEqual(['b']);
+    expect(assigned('after')).toEqual(['a']);
+  });
 
   it('leaves unslotted children unrendered', () => {
     const el = mount({ html: '<p id="stray">stray</p>' });

@@ -125,9 +125,26 @@ describe('minified output', () => {
 });
 
 describe('degradation is caught rather than silent', () => {
+  /**
+   * Asserting on one export's body rather than the whole file, so a plugin that
+   * did nothing at all cannot pass: the renamed literal has to keep its
+   * newlines *while* the untouched one loses them.
+   */
+  const bodyOf = (source: string, name: string) =>
+    source.match(new RegExp(`export const ${name}\\s*=\\s*\`([\\s\\S]*?)\``))![1]!;
+
   it('notices a renamed tmpl export', () => {
     const renamed = templateSource.replace('export const tmpl', 'export const markup');
-    expect(transform(renamed)).toContain('\n');
+    const output = transform(renamed)!;
+    expect(bodyOf(output, 'chevrons')).not.toMatch(/\n/);
+    expect(bodyOf(output, 'markup')).toMatch(/\n/);
+  });
+
+  it('notices a renamed chevrons export', () => {
+    const renamed = templateSource.replace('export const chevrons', 'export const icon');
+    const output = transform(renamed)!;
+    expect(bodyOf(output, 'tmpl')).not.toMatch(/\n/);
+    expect(bodyOf(output, 'icon')).toMatch(/\n/);
   });
 
   it('notices a moved template module', () => {
