@@ -20,8 +20,10 @@ const must = <T extends Element>(root: ParentNode, sel: string): T => {
 };
 
 class BeforeAfter extends HTMLElement {
+  // `step` and `grab` are deliberately absent: both are read at the moment they
+  // are used, so observing them would only schedule a pointless #syncA11y().
   static observedAttributes = [
-    'value', 'orientation', 'disabled', 'aspect', 'step', 'label', 'grab',
+    'value', 'orientation', 'disabled', 'aspect', 'label',
     'before-src', 'after-src', 'before-alt', 'after-alt', 'before-label', 'after-label',
   ];
 
@@ -35,6 +37,8 @@ class BeforeAfter extends HTMLElement {
   #value = 50;
   #dragging = false;
   #dirty = false;
+  // Kept so a drag can be torn down without a pointer event to read an id off.
+  #pointerId = -1;
 
   constructor() {
     super();
@@ -67,7 +71,9 @@ class BeforeAfter extends HTMLElement {
     for (const slot of this.#root.querySelectorAll('slot')) {
       slot.addEventListener('slotchange', this.#syncBox);
     }
-    if (!this.hasAttribute('value')) this.#place(this.#value);
+    // Unconditional, and idempotent when a `value` attribute already placed it:
+    // this is the only thing that writes the initial aria-valuenow.
+    this.#place(this.#value);
     this.#syncA11y();
     this.#syncBox();
   }
@@ -84,6 +90,13 @@ class BeforeAfter extends HTMLElement {
     for (const slot of this.#root.querySelectorAll('slot')) {
       slot.removeEventListener('slotchange', this.#syncBox);
     }
+    // A drag in flight when the element leaves the document never gets its
+    // pointerup -- this callback has already unbound the listener by the time
+    // the browser would fire one. Left set, #dragging would make the next
+    // pointermove after a reconnect drag with no press behind it, and a stale
+    // #dirty would commit as somebody else's `change`.
+    this.#endDrag();
+    this.#dirty = false;
   }
 
   attributeChangedCallback(name: string, old: string | null, val: string | null) {
@@ -128,7 +141,9 @@ class BeforeAfter extends HTMLElement {
   get disabled() { return this.hasAttribute('disabled'); }
   set disabled(v: boolean) { this.toggleAttribute('disabled', Boolean(v)); }
 
-  get step() { return parseFloat(this.getAttribute('step') ?? '') || 1; }
+  get step(): number { return parseFloat(this.getAttribute('step') ?? '') || 1; }
+  // Reflects, like `orientation` and `disabled`, so the property round-trips.
+  set step(v: number | string) { this.setAttribute('step', String(v)); }
 
   /* --- internals --- */
 
@@ -220,6 +235,18 @@ class BeforeAfter extends HTMLElement {
 
   #stop = (e: Event) => e.preventDefault();
 
+  // Teardown only -- never emits, so it is safe to call from anywhere the
+  // gesture ends, including a disconnect that will never see a pointerup.
+  #endDrag() {
+    if (!this.#dragging) return;
+    this.#dragging = false;
+    this.#frame.classList.remove('is-dragging');
+    if (this.#pointerId !== -1 && this.#frame.hasPointerCapture(this.#pointerId)) {
+      this.#frame.releasePointerCapture(this.#pointerId);
+    }
+    this.#pointerId = -1;
+  }
+
   #onDown = (e: PointerEvent) => {
     if (this.disabled) return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
@@ -227,6 +254,7 @@ class BeforeAfter extends HTMLElement {
     if (!onRail && this.getAttribute('grab') !== 'anywhere') return;
     e.preventDefault();
     this.#dragging = true;
+    this.#pointerId = e.pointerId;
     this.#frame.classList.add('is-dragging');
     try { this.#frame.setPointerCapture(e.pointerId); } catch { /* synthetic pointer */ }
     this.#handle.classList.add('by-pointer');
@@ -234,15 +262,18 @@ class BeforeAfter extends HTMLElement {
     this.#fromPointer(e);
   };
 
+  // Re-reads `disabled` rather than trusting the check in #onDown: disabling
+  // mid-gesture has to freeze the divider, not just refuse the next press.
   #onMove = (e: PointerEvent) => {
-    if (this.#dragging) this.#fromPointer(e);
+    if (this.#dragging && !this.disabled) this.#fromPointer(e);
   };
 
-  #onUp = (e: PointerEvent) => {
+  // Commits even when disabled: whatever movement set #dirty happened while
+  // the element was live, and swallowing it would leave a `change`-only
+  // listener never hearing about a real move.
+  #onUp = () => {
     if (!this.#dragging) return;
-    this.#dragging = false;
-    this.#frame.classList.remove('is-dragging');
-    if (this.#frame.hasPointerCapture(e.pointerId)) this.#frame.releasePointerCapture(e.pointerId);
+    this.#endDrag();
     this.#commit();
   };
 

@@ -10,6 +10,11 @@ export const tmpl = `
   touch-action: pan-y;
   aspect-ratio: var(--_ar, auto);
 }
+/* The axis the browser may still scroll is the one the divider does not use.
+   Only reachable via grab="anywhere"; .rail sets touch-action: none itself. */
+:host([orientation="vertical"]) {
+  touch-action: pan-x;
+}
 :host([hidden]) {
   display: none;
 }
@@ -200,6 +205,6 @@ img[hidden] {
   <div class="rail">
     <span class="line" part="divider"></span>
     <button class="handle" part="handle" type="button" role="slider"
-      aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"></button>
+      aria-valuemin="0" aria-valuemax="100"></button>
   </div>
 </div>`;
