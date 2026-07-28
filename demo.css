@@ -493,6 +493,32 @@
     background: var(--accent);
   }
 
+  /* ---- download ---------------------------------------------------- */
+
+  .dl {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem .9rem;
+    margin: 0;
+  }
+
+  .dl-main {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--accent);
+    text-decoration: none;
+    border: 1px solid var(--accent);
+    border-radius: 3px;
+    padding: .45rem .9rem;
+    transition: background .15s, color .15s;
+  }
+
+  .dl-main:hover { background: var(--accent); color: var(--ground); }
+
+  .dl-meta { font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
+  .dl-meta a { color: var(--ink-2); }
+
   /* ---- source block ------------------------------------------------ */
 
   .source-head {
@@ -519,7 +545,10 @@
     background: var(--surface);
   }
 
-  button.copy {
+  .source-actions { display: inline-flex; gap: .4rem; }
+
+  /* Shared by the Copy button and the Download link beside it. */
+  .copy {
     font: inherit;
     font-family: var(--mono);
     letter-spacing: .1em;
@@ -534,8 +563,10 @@
     transition: border-color .15s, color .15s;
   }
 
-  button.copy:hover { border-color: var(--accent); color: var(--accent); }
-  button.copy[data-done="1"] { color: var(--accent); border-color: var(--accent); }
+  a.copy { text-decoration: none; }
+
+  .copy:hover { border-color: var(--accent); color: var(--accent); }
+  .copy[data-done="1"] { color: var(--accent); border-color: var(--accent); }
 
   footer.foot {
     padding: 2.5rem 0 0;
