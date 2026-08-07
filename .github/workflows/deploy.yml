@@ -41,7 +41,7 @@ jobs:
       - name: Stage the site
         run: |
           mkdir _site
-          cp index.html demo.css _site/
+          cp index.html demo.css llms.txt _site/
           cp -r dist _site/dist
 
       - uses: actions/configure-pages@v5
